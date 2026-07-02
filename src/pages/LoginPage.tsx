@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FacebookIcon } from "../components/icons/SocialIcons";
 import AuthLayout from "../components/layout/AuthLayout";
 import FormInput from "../components/ui/FormInput";
 import FormButton from "../components/ui/FormButton";
@@ -69,7 +68,7 @@ export default function LoginPage() {
 
       <FormButton
         disabled={!canContinue}
-        buttonClassName="h-[52px] rounded-[14px] text-[15px] font-semibold"
+        buttonClassName={`h-[52px] rounded-[14px] text-[15px] font-semibold ${canContinue ? "bg-gradient-to-r from-amber to-orange text-white shadow-glow hover:opacity-95" : ""}`}
         onClick={() => {
           setLoginEmail(email.trim().toLowerCase());
           navigate("/login-password");
@@ -88,17 +87,6 @@ export default function LoginPage() {
         requiresLegalConsent
         hasAcceptedLegal={acceptedLegal}
       />
-
-      <button
-        className="mb-3 flex h-[52px] w-full cursor-not-allowed items-center justify-center gap-2 rounded-[12px] bg-[#3f5db2] text-[14px] font-medium text-white opacity-55 transition-all duration-200"
-        type="button"
-        disabled
-        aria-disabled="true"
-        title="Coming soon"
-      >
-        <FacebookIcon />
-        <span>Continue with Facebook</span>
-      </button>
 
       <p className="text-center text-[13px] text-[#7a7884]">
         Don&apos;t have an account?{" "}
