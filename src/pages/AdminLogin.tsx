@@ -77,6 +77,7 @@ export default function AdminLogin() {
 
           <FormButton
             disabled={!canLogin || isSubmitting}
+            buttonClassName={`h-[48px] rounded-btn text-[14px] font-medium ${canLogin && !isSubmitting ? "bg-gradient-to-r from-amber to-orange text-white shadow-glow hover:opacity-95" : ""}`}
             onClick={handleLogin}
             isLoading={isSubmitting}
             loadingText="Logging in..."
