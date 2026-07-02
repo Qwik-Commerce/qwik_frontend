@@ -10,7 +10,6 @@ import FormInput from "../components/ui/FormInput";
 import FormButton from "../components/ui/FormButton";
 import LegalConsentModal, { type LegalDocumentType } from "../components/auth/LegalConsentModal";
 import GoogleSignInButton from "../components/auth/GoogleSignInButton";
-import { FacebookIcon } from "../components/icons/SocialIcons";
 
 const LEGAL_CONSENT_VERSION = "2026-06-09";
 
@@ -212,7 +211,7 @@ export default function SignUpPage() {
 
       <FormButton
         disabled={!canCreate || isSubmitting}
-        buttonClassName="h-[52px] rounded-[14px] text-[15px] font-semibold"
+        buttonClassName={`h-[52px] rounded-[14px] text-[15px] font-semibold ${canCreate && !isSubmitting ? "bg-gradient-to-r from-amber to-orange text-white shadow-glow hover:opacity-95" : ""}`}
         onClick={async () => {
           try {
             setIsSubmitting(true);
@@ -258,17 +257,6 @@ export default function SignUpPage() {
         hasAcceptedLegal={acceptedLegal}
         onLegalConsentRequired={() => showError("Please accept the Terms of Use and Privacy Policy to continue.")}
       />
-
-      <button
-        className="mb-3 flex h-[52px] w-full cursor-not-allowed items-center justify-center gap-2 rounded-[12px] bg-[#3f5db2] text-[14px] font-medium text-white opacity-55 transition-all duration-200"
-        type="button"
-        disabled
-        aria-disabled="true"
-        title="Coming soon"
-      >
-        <FacebookIcon />
-        <span>Continue with Facebook</span>
-      </button>
 
       <p className="text-center text-[13px] text-[#7a7884]">
         Already have an account?{" "}
