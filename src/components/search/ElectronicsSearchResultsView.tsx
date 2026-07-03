@@ -58,7 +58,8 @@ const SORT_OPTIONS: Array<{ label: string; value: SortValue }> = [
   { label: "Price: Low to High", value: "price-low" },
   { label: "Price: High to Low", value: "price-high" },
 ];
-const STRIP_CATEGORIES: Array<{ name: StripCategory; image?: string }> = [
+const STRIP_CATEGORIES: Array<{ name: StripCategory | "all"; image?: string }> = [
+  { name: "all" as const },
   { name: "Laptops", image: getCategoryBubbleImage("electronics", "Laptops") },
   { name: "Desktop", image: getCategoryBubbleImage("electronics", "Desktop") },
   { name: "Server", image: getCategoryBubbleImage("electronics", "Server") },
@@ -121,20 +122,27 @@ function StripBubble({
   active,
   onClick,
 }: {
-  name: StripCategory;
+  name: StripCategory | "all";
   image?: string;
   active: boolean;
   onClick: () => void;
 }) {
+  const displayName = name === "all" ? "All" : name;
   return (
     <button type="button" onClick={onClick} className="flex min-w-[92px] flex-col items-center gap-1.5 text-center">
-      <CategoryBubbleAvatar
-        alt={name}
-        imageSrc={image}
-        fallbackText={getBubbleInitials(name)}
-        className={`grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full border ${active ? "border-[#1f1d27]" : "border-[#ddd9d2]"}`}
-      />
-      <span className="text-[13px] font-medium text-[#1f1d27]">{name}</span>
+      {name === "all" ? (
+        <div className={`grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full border font-medium text-[#1f1d27] ${active ? "border-[#1f1d27]" : "border-[#ddd9d2]"}`}>
+          All
+        </div>
+      ) : (
+        <CategoryBubbleAvatar
+          alt={displayName}
+          imageSrc={image}
+          fallbackText={getBubbleInitials(displayName)}
+          className={`grid h-[60px] w-[60px] place-items-center overflow-hidden rounded-full border ${active ? "border-[#1f1d27]" : "border-[#ddd9d2]"}`}
+        />
+      )}
+      <span className="text-[13px] font-medium text-[#1f1d27]">{displayName}</span>
     </button>
   );
 }
@@ -311,11 +319,11 @@ function ElectronicsFilters({
 }
 
 export default function ElectronicsSearchResultsView({ query, navigate, view, locationFilter }: ElectronicsSearchResultsViewProps) {
-  const [selectedType, setSelectedType] = useState<"all" | ElectronicsType>("Laptops & Computers");
+  const [selectedType, setSelectedType] = useState<"all" | ElectronicsType>("all");
   const [sortBy, setSortBy] = useState<SortValue>("newest");
   const [selectedBrand, setSelectedBrand] = useState<"all" | ElectronicsBrand>("all");
   const [verifiedFilter, setVerifiedFilter] = useState<VerifiedValue>("all");
-  const [selectedStripCategory, setSelectedStripCategory] = useState<StripCategory>("Laptops");
+  const [selectedStripCategory, setSelectedStripCategory] = useState<StripCategory | "all" >("all");
   const [electronicsResults, setElectronicsResults] = useState<MockElectronicsListing[]>([]);
   const [resultTotal, setResultTotal] = useState(0);
   const [resultMode, setResultMode] = useState<SearchResultMode>("exact");
@@ -360,11 +368,11 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
   }, [query, locationFilter]);
 
   useEffect(() => {
-    setSelectedType("Laptops & Computers");
+    setSelectedType("all");
     setSortBy("newest");
     setSelectedBrand("all");
     setVerifiedFilter("all");
-    setSelectedStripCategory("Laptops");
+    setSelectedStripCategory("all");
     setSelectedCondition("all");
     setSelectedMaxPrice(100200000);
     setMobileFiltersOpen(false);
@@ -376,7 +384,7 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
         electronicsResults.filter((item) => {
           const verified = isSellerVerified(item.ad.user);
           const typeMatches = selectedType === "all" || item.electronicsType === selectedType;
-          const stripMatches = item.stripCategory === selectedStripCategory;
+          const stripMatches = selectedStripCategory === "all" || item.stripCategory === selectedStripCategory;
           const brandMatches = selectedBrand === "all" || item.brand === selectedBrand;
           const verifiedMatches =
             verifiedFilter === "all" ||

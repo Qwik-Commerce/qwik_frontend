@@ -12,7 +12,7 @@ const CATEGORY_SEARCH_CONTEXTS: CategorySearchContext[] = [
   { name: "Agriculture & Food", slug: "agriculture", aliases: ["agriculture", "agric", "agriculture & food", "food"] },
   { name: "Sports & Leisure", slug: "sports-leisure", aliases: ["sport", "sports", "sports & leisure", "leisure"] },
   { name: "Art", slug: "art", aliases: ["art", "arts"] },
-  { name: "Electronics", slug: "electronics", aliases: ["electronic", "electronics"] },
+  { name: "Electronics", slug: "electronics", aliases: ["electronic", "electronics", "laptop", "laptops", "computer", "computers"] },
   { name: "Properties", slug: "properties", aliases: ["home", "property", "properties"] },
   { name: "Furniture", slug: "furniture-appliances", aliases: ["furniture", "furnitures", "furniture & appliances"] },
   { name: "Fashion", slug: "fashion", aliases: ["fashion"] },
