@@ -225,6 +225,26 @@ export default function HomePage() {
     fetchAds(currentPage + 1, true);
   }, [currentPage, fetchAds]);
 
+  // Infinite scroll: auto-load more when user scrolls near bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      // Calculate scroll position
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight;
+      const winHeight = window.innerHeight;
+      const scrollPercent = (scrollTop + winHeight) / docHeight;
+
+      // Trigger fetch when user is 70% down the page, has more, and not already loading
+      if (scrollPercent > 0.7 && hasMore && !loadingMore) {
+        console.log("📜 Scroll-triggered infinite load for page", currentPage + 1, "scrollPercent:", scrollPercent.toFixed(2));
+        fetchAds(currentPage + 1, true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [currentPage, hasMore, loadingMore, fetchAds]);
+
   useEffect(() => {
     setCurrentPage(1);
     setProducts([]);
@@ -323,6 +343,7 @@ export default function HomePage() {
                 </article>
               ))}
             </div>
+
             {hasMore && !loadingMore && (
               <div className="mt-8 flex justify-center">
                 <button
