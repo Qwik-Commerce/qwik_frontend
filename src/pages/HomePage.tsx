@@ -179,8 +179,12 @@ export default function HomePage() {
   const selectedLocation = getLocationSearchParam(location.search);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>(() => readStoredViewMode());
+  const PAGE_SIZE = 12;
 
   useEffect(() => {
     try {
@@ -190,24 +194,44 @@ export default function HomePage() {
     }
   }, [viewMode]);
 
-  const fetchAds = useCallback(async () => {
+  const fetchAds = useCallback(async (page: number = 1, shouldAppend: boolean = false) => {
     try {
-      setLoading(true);
+      if (page === 1) setLoading(true);
+      else setLoadingMore(true);
       setError(null);
-      const params = new URLSearchParams({ pageSize: "12", imagesLimit: "1" });
+      const params = new URLSearchParams({ pageSize: PAGE_SIZE.toString(), imagesLimit: "1", page: page.toString() });
       if (selectedLocation) params.set("location", selectedLocation);
       const result = await api.ads(`?${params.toString()}`);
-      setProducts(result.data || []);
+      const newProducts = result.data || [];
+      
+      if (shouldAppend) {
+        setProducts((prev) => [...prev, ...newProducts]);
+      } else {
+        setProducts(newProducts);
+      }
+      
+      // Determine if there are more ads to load
+      const totalFetched = shouldAppend ? products.length + newProducts.length : newProducts.length;
+      setHasMore(newProducts.length === PAGE_SIZE);
+      setCurrentPage(page);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load ads");
       console.error("Error fetching ads:", err);
     } finally {
-      setLoading(false);
+      if (page === 1) setLoading(false);
+      else setLoadingMore(false);
     }
-  }, [selectedLocation]);
+  }, [selectedLocation, products.length]);
+
+  const handleLoadMore = useCallback(() => {
+    fetchAds(currentPage + 1, true);
+  }, [currentPage, fetchAds]);
 
   useEffect(() => {
-    fetchAds();
+    setCurrentPage(1);
+    setProducts([]);
+    setHasMore(true);
+    fetchAds(1, false);
   }, [fetchAds]);
   return (
     <div className="min-h-screen bg-page text-ink">
@@ -248,7 +272,7 @@ export default function HomePage() {
             <p className="text-[16px] text-[#d14343]">{error}</p>
             <button
               type="button"
-              onClick={fetchAds}
+              onClick={() => fetchAds(1, false)}
               className="mt-4 rounded-[8px] bg-gradient-to-r from-amber to-orange px-4 py-2 text-[15px] text-white"
             >
               Retry
@@ -259,91 +283,133 @@ export default function HomePage() {
         {!loading && !error && products.length === 0 && <p className="text-center text-lg text-gray-500">No ads available</p>}
 
         {!loading && !error && products.length > 0 && viewMode === "grid" && (
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            {products.map((item) => (
-              <article
-                key={item.id}
-                className="cursor-pointer rounded-[22px] bg-white p-2.5 transition hover:scale-[1.01] sm:rounded-[26px] sm:p-4"
-                onClick={() => navigate(`/product-details/${item.id}`)}
-              >
-                <div className="relative h-[170px] w-full overflow-hidden rounded-[14px] bg-white sm:h-[260px] sm:rounded-[18px]">
-                  {isSellerVerified(item.user as any) ? <VerifiedSellerBadge /> : null}
-                  {item.images?.[0]?.url ? (
-                    <FallbackImage
-                      src={item.images[0].url}
-                      alt={item.title}
-                      className="h-full w-full"
-                      fallback={<ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />}
-                    />
-                  ) : (
-                    <ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />
-                  )}
-                </div>
-                <div className="px-0 pb-1 pt-3 sm:pt-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="m-0 min-w-0 text-[16px] font-semibold leading-none sm:text-[20px]">₦ {item.price.toLocaleString()}</h3>
+          <>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+              {products.map((item) => (
+                <article
+                  key={item.id}
+                  className="cursor-pointer rounded-[22px] bg-white p-2.5 transition hover:scale-[1.01] sm:rounded-[26px] sm:p-4"
+                  onClick={() => navigate(`/product-details/${item.id}`)}
+                >
+                  <div className="relative h-[170px] w-full overflow-hidden rounded-[14px] bg-white sm:h-[260px] sm:rounded-[18px]">
+                    {isSellerVerified(item.user as any) ? <VerifiedSellerBadge /> : null}
+                    {item.images?.[0]?.url ? (
+                      <FallbackImage
+                        src={item.images[0].url}
+                        alt={item.title}
+                        className="h-full w-full"
+                        fallback={<ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />}
+                      />
+                    ) : (
+                      <ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />
+                    )}
                   </div>
-                  <h4 className="mb-1.5 mt-3 text-[15px] font-medium leading-[1.25] sm:mt-4 sm:text-[18px]" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</h4>
-                  <p className="mb-2 text-[13px] leading-[1.35] text-muted sm:mb-3 sm:text-[15px] sm:leading-[1.4]" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.description}</p>
-                  <div className="flex items-end justify-between gap-2">
-                    <small className="flex min-w-0 items-center gap-1 text-[13px] text-[#4b4a54] sm:text-[15px]">
-                      <LocationPin className="h-4 w-4 shrink-0" />
-                      <span style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.location}</span>
-                    </small>
-                    {getAdConditionLabel(item.condition) ? (
-                      <span className="shrink-0 rounded-[8px] bg-[#f5ebdc] px-2 py-0.5 text-[11px] font-medium text-[#c07a1f] sm:text-[12px]">
-                        {getAdConditionLabel(item.condition)}
-                      </span>
-                    ) : null}
+                  <div className="px-0 pb-1 pt-3 sm:pt-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="m-0 min-w-0 text-[16px] font-semibold leading-none sm:text-[20px]">₦ {item.price.toLocaleString()}</h3>
+                    </div>
+                    <h4 className="mb-1.5 mt-3 text-[15px] font-medium leading-[1.25] sm:mt-4 sm:text-[18px]" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</h4>
+                    <p className="mb-2 text-[13px] leading-[1.35] text-muted sm:mb-3 sm:text-[15px] sm:leading-[1.4]" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.description}</p>
+                    <div className="flex items-end justify-between gap-2">
+                      <small className="flex min-w-0 items-center gap-1 text-[13px] text-[#4b4a54] sm:text-[15px]">
+                        <LocationPin className="h-4 w-4 shrink-0" />
+                        <span style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.location}</span>
+                      </small>
+                      {getAdConditionLabel(item.condition) ? (
+                        <span className="shrink-0 rounded-[8px] bg-[#f5ebdc] px-2 py-0.5 text-[11px] font-medium text-[#c07a1f] sm:text-[12px]">
+                          {getAdConditionLabel(item.condition)}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
+                </article>
+              ))}
+            </div>
+            {hasMore && !loadingMore && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  className="rounded-[8px] bg-gradient-to-r from-amber to-orange px-8 py-3 text-[15px] font-medium text-white transition hover:shadow-lg active:scale-95"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+            {loadingMore && (
+              <div className="mt-8 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#ff9715]" />
+                  <span className="text-[15px] text-muted">Loading more ads...</span>
                 </div>
-              </article>
-            ))}
-          </div>
+              </div>
+            )}
+          </>
         )}
 
         {!loading && !error && products.length > 0 && viewMode === "list" && (
-          <div className="flex flex-col gap-4">
-            {products.map((item) => (
-              <article
-                key={item.id}
-                className="flex cursor-pointer gap-3 overflow-hidden rounded-[22px] bg-white p-3 transition hover:shadow-[0_8px_24px_rgba(31,29,39,0.06)] sm:gap-6 sm:rounded-[26px] sm:p-4"
-                onClick={() => navigate(`/product-details/${item.id}`)}
-              >
-                <div className="relative h-[120px] w-[120px] shrink-0 overflow-hidden rounded-[14px] bg-[#f2f2f4] sm:h-[200px] sm:w-[260px] sm:rounded-[18px]">
-                  {isSellerVerified(item.user as any) ? <VerifiedSellerBadge /> : null}
-                  {item.images?.[0]?.url ? (
-                    <FallbackImage
-                      src={item.images[0].url}
-                      alt={item.title}
-                      className="h-full w-full"
-                      fallback={<ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />}
-                    />
-                  ) : (
-                    <ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />
-                  )}
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col py-1 sm:py-3">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <h3 className="m-0 min-w-0 text-[16px] font-semibold leading-none sm:text-[20px]">₦ {item.price.toLocaleString()}</h3>
+          <>
+            <div className="flex flex-col gap-4">
+              {products.map((item) => (
+                <article
+                  key={item.id}
+                  className="flex cursor-pointer gap-3 overflow-hidden rounded-[22px] bg-white p-3 transition hover:shadow-[0_8px_24px_rgba(31,29,39,0.06)] sm:gap-6 sm:rounded-[26px] sm:p-4"
+                  onClick={() => navigate(`/product-details/${item.id}`)}
+                >
+                  <div className="relative h-[120px] w-[120px] shrink-0 overflow-hidden rounded-[14px] bg-[#f2f2f4] sm:h-[200px] sm:w-[260px] sm:rounded-[18px]">
+                    {isSellerVerified(item.user as any) ? <VerifiedSellerBadge /> : null}
+                    {item.images?.[0]?.url ? (
+                      <FallbackImage
+                        src={item.images[0].url}
+                        alt={item.title}
+                        className="h-full w-full"
+                        fallback={<ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />}
+                      />
+                    ) : (
+                      <ImagePlaceholder title="" labelClassName="hidden" className="rounded-[14px] sm:rounded-[18px]" />
+                    )}
                   </div>
-                  <h4 className="mb-1.5 mt-2 text-[15px] font-medium leading-[1.25] sm:mb-2 sm:mt-3 sm:text-[18px]" style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</h4>
-                  <p className="mb-2 text-[13px] leading-[1.4] text-muted sm:mb-3 sm:text-[15px]" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.description}</p>
-                  <div className="mt-auto flex items-end justify-between gap-2">
-                    <small className="flex min-w-0 items-center gap-1 text-[13px] text-[#4b4a54] sm:text-[15px]">
-                      <LocationPin className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{item.location}</span>
-                    </small>
-                    {getAdConditionLabel(item.condition) ? (
-                      <span className="shrink-0 rounded-[8px] bg-[#f5ebdc] px-2 py-0.5 text-[11px] font-medium text-[#c07a1f] sm:text-[12px]">
-                        {getAdConditionLabel(item.condition)}
-                      </span>
-                    ) : null}
+                  <div className="flex min-w-0 flex-1 flex-col py-1 sm:py-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <h3 className="m-0 min-w-0 text-[16px] font-semibold leading-none sm:text-[20px]">₦ {item.price.toLocaleString()}</h3>
+                    </div>
+                    <h4 className="mb-1.5 mt-2 text-[15px] font-medium leading-[1.25] sm:mb-2 sm:mt-3 sm:text-[18px]" style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</h4>
+                    <p className="mb-2 text-[13px] leading-[1.4] text-muted sm:mb-3 sm:text-[15px]" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.description}</p>
+                    <div className="mt-auto flex items-end justify-between gap-2">
+                      <small className="flex min-w-0 items-center gap-1 text-[13px] text-[#4b4a54] sm:text-[15px]">
+                        <LocationPin className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.location}</span>
+                      </small>
+                      {getAdConditionLabel(item.condition) ? (
+                        <span className="shrink-0 rounded-[8px] bg-[#f5ebdc] px-2 py-0.5 text-[11px] font-medium text-[#c07a1f] sm:text-[12px]">
+                          {getAdConditionLabel(item.condition)}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
+                </article>
+              ))}
+            </div>
+            {hasMore && !loadingMore && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  className="rounded-[8px] bg-gradient-to-r from-amber to-orange px-8 py-3 text-[15px] font-medium text-white transition hover:shadow-lg active:scale-95"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+            {loadingMore && (
+              <div className="mt-8 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#ff9715]" />
+                  <span className="text-[15px] text-muted">Loading more ads...</span>
                 </div>
-              </article>
-            ))}
-          </div>
+              </div>
+            )}
+          </>
         )}
       </main>
 
