@@ -210,8 +210,6 @@ export default function HomePage() {
         setProducts(newProducts);
       }
       
-      // Determine if there are more ads to load
-      const totalFetched = shouldAppend ? products.length + newProducts.length : newProducts.length;
       setHasMore(newProducts.length === PAGE_SIZE);
       setCurrentPage(page);
     } catch (err) {
@@ -221,7 +219,7 @@ export default function HomePage() {
       if (page === 1) setLoading(false);
       else setLoadingMore(false);
     }
-  }, [selectedLocation, products.length]);
+  }, [selectedLocation]);
 
   const handleLoadMore = useCallback(() => {
     fetchAds(currentPage + 1, true);
