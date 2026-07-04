@@ -421,7 +421,7 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className={view === "list" ? "space-y-4" : "grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"}>
             {filteredResults.map((item) => (
               <ListingCard
                 key={item.id}
@@ -435,6 +435,7 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
                 }}
                 href={buildProductDetailsRoute(item.ad.id)}
                 interactive
+                variant={view === "list" ? "list" : "grid"}
                 clampTitleLines={2}
                 clampDescriptionLines={3}
                 clampLocationLines={1}

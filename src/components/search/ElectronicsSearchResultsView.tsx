@@ -530,7 +530,7 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
               </p>
             </div>
           ) : view === "list" ? (
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="space-y-4">
               {filteredResults.map((item) => (
                 <ListingCard
                   key={item.id}
@@ -544,6 +544,7 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
                   }}
                   href={buildProductDetailsRoute(item.ad.id)}
                   interactive
+                  variant="list"
                   clampTitleLines={2}
                   clampDescriptionLines={3}
                   clampLocationLines={1}
