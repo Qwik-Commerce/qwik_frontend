@@ -474,7 +474,7 @@ export default function BeautySearchResultsView({ query, navigate, view, locatio
             </div>
           </div>
 
-          <div className={view === "list" ? "space-y-4" : "grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"}>
+          <div className={view === "list" ? "space-y-4" : "grid grid-cols-2 gap-5 xl:grid-cols-3"}>
             {filteredResults.map((item) => (
               <ListingCard
                 key={item.id}
