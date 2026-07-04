@@ -423,13 +423,23 @@ export function SiteHeader({
           onClick={() => navigate("/profile-settings")}
           className="cursor-pointer rounded-full shrink-0"
           type="button"
+          aria-label={currentUserRecord ? `${currentUser.fullName} profile` : "Profile"}
         >
-          <UserAvatar
-            name={currentUser.fullName}
-            imageUrl={currentUser.avatarUrl}
-            alt={`${currentUser.fullName} profile`}
-            className="h-8 w-8 rounded-full object-cover sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-[42px] lg:w-[42px]"
-          />
+          {currentUserRecord ? (
+            <UserAvatar
+              name={currentUser.fullName}
+              imageUrl={currentUser.avatarUrl}
+              alt={`${currentUser.fullName} profile`}
+              className="h-8 w-8 rounded-full object-cover sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-[42px] lg:w-[42px]"
+            />
+          ) : (
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#ececee] text-[#6d6a74] sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-[42px] lg:w-[42px]" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="3.5" />
+                <path d="M5 19c1.8-3.1 4.1-4.6 7-4.6s5.2 1.5 7 4.6" />
+              </svg>
+            </span>
+          )}
         </button>
         <button
           className="h-8 cursor-pointer rounded-[9px] bg-gradient-to-r from-amber to-orange px-2 text-[11px] font-medium text-white shadow-glow shrink-0 whitespace-nowrap sm:h-9 sm:px-2.5 sm:text-[12px] md:h-10 md:px-3 md:text-[13px] lg:h-[42px] lg:rounded-[8px] lg:px-[16px] lg:text-[16px]"
