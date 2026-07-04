@@ -7,12 +7,8 @@ import { isCategoryMarkerQuery } from "../../lib/searchContext";
 import { ALL_NIGERIA_LOCATION, NIGERIAN_LOCATIONS } from "../../lib/searchContext";
 import { isSellerVerified } from "../../lib/sellerVerification";
 import ListingCard from "../listings/ListingCard";
-import VerifiedSellerBadge from "../listings/VerifiedSellerBadge";
-import { FallbackImage } from "../ui/FallbackImage";
 import BackButton from "../ui/BackButton";
 import { CategoryBubbleAvatar } from "./CategoryBubbleAvatar";
-import { LocationPin } from "../icons/LocationPin";
-import { ImagePlaceholder } from "../ui/ImagePlaceholder";
 import DropdownSelect from "../ui/DropdownSelect";
 import {
   type VehicleCondition,
@@ -178,46 +174,6 @@ function BrandBubble({
       />
       <span className="text-[14px] font-medium text-[#1f1d27]">{name}</span>
     </button>
-  );
-}
-
-function VehicleListCard({ item, onClick }: { item: VehicleListing; onClick: () => void }) {
-  return (
-    <article className="cursor-pointer rounded-[24px] border border-[#ddd9d2] bg-white p-3 shadow-[0_8px_24px_rgba(31,29,39,0.05)] sm:p-4" onClick={onClick}>
-      <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="relative h-[220px] w-full overflow-hidden rounded-[18px] bg-white sm:h-[250px]">
-          {isSellerVerified(item.ad.user) ? <VerifiedSellerBadge /> : null}
-          {item.ad.images?.[0]?.url ? (
-            <FallbackImage
-              src={item.ad.images[0].url}
-              alt={item.ad.title}
-              className="h-full w-full"
-              fallback={<ImagePlaceholder title="" labelClassName="hidden" className="rounded-[18px]" />}
-            />
-          ) : (
-            <ImagePlaceholder title="" labelClassName="hidden" className="rounded-[18px]" />
-          )}
-        </div>
-        <div>
-          <div className="mb-3 flex items-center gap-3">
-            <h4 className="text-[24px] font-semibold leading-none text-[#1f1d27] sm:text-[28px]">{formatNaira(item.ad.price)}</h4>
-          </div>
-          <h5 className="mb-2 text-[20px] font-medium leading-tight text-[#1f1d27]">{item.ad.title}</h5>
-          <p className="mb-3 text-[15px] leading-[1.55] text-[#6d6a74]">{item.ad.description}</p>
-          <div className="flex items-end justify-between gap-2">
-            <small className="flex min-w-0 items-center gap-1 text-[14px] text-[#4b4a54]">
-              <LocationPin className="h-4 w-4 shrink-0" />
-              <span className="truncate">{item.ad.location}</span>
-            </small>
-            {getAdConditionLabel(item.ad.condition) ? (
-              <span className="shrink-0 rounded-[8px] bg-badge-bg px-2 py-0.5 text-[11px] font-medium text-[#c07a1f] sm:text-[12px]">
-                {getAdConditionLabel(item.ad.condition)}
-              </span>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </article>
   );
 }
 
@@ -418,6 +374,14 @@ export default function VehicleSearchResultsView({ query, navigate, view, locati
     () => brandOptions.map((name) => ({ name, mark: initialsForBrand(name) })),
     [brandOptions],
   );
+  const typeStrip = useMemo(
+    () => VEHICLE_FILTER_TYPES.filter((type): type is VehicleType => type !== "all").map((type) => ({
+      type,
+      name: TYPE_LABELS[type],
+      mark: initialsForBrand(TYPE_LABELS[type]),
+    })),
+    [],
+  );
   const categoryHeading = selectedType === "all" ? "Vehicles in Nigeria" : `${TYPE_LABELS[selectedType]} in Nigeria`;
   const maxPrice = useMemo(
     () => Math.max(...vehicleResults.map((item) => item.ad.price), 100200000),
@@ -596,9 +560,22 @@ export default function VehicleSearchResultsView({ query, navigate, view, locati
             </div>
 
             <div className="mb-8 overflow-x-auto rounded-[28px] border border-[#ddd9d2] bg-white px-4 py-5 shadow-[0_8px_24px_rgba(31,29,39,0.05)] sm:px-6">
-              {brandStrip.length === 0 ? (
-                <p className="text-[14px] text-[#6d6a74]">Select a vehicle category to browse brand quick filters.</p>
-              ) : (
+              {selectedType === "all" ? (
+                <div className="flex min-w-max items-start gap-6 sm:gap-8">
+                  {typeStrip.map((typeItem) => (
+                    <BrandBubble
+                      key={typeItem.type}
+                      name={typeItem.name}
+                      mark={typeItem.mark}
+                      active={false}
+                      onClick={() => {
+                        setSelectedType((current) => (current === typeItem.type ? "all" : typeItem.type));
+                        setSelectedBrand("all");
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : brandStrip.length > 0 ? (
                 <div className="flex min-w-max items-start gap-6 sm:gap-8">
                   {brandStrip.map((brand) => (
                     <BrandBubble
@@ -610,6 +587,8 @@ export default function VehicleSearchResultsView({ query, navigate, view, locati
                     />
                   ))}
                 </div>
+              ) : (
+                <p className="text-[14px] text-[#6d6a74]">No quick filters available for this vehicle category.</p>
               )}
             </div>
 
@@ -632,11 +611,27 @@ export default function VehicleSearchResultsView({ query, navigate, view, locati
                 </p>
               </div>
             ) : view === "list" ? (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-4">
                 {filteredResults.map((item) => (
-                  <VehicleListCard
+                  <ListingCard
                     key={item.id}
-                    item={item}
+                    item={{
+                      price: formatNaira(item.ad.price),
+                      title: item.ad.title,
+                      description: item.ad.description,
+                      location: item.ad.location,
+                      image: item.ad.images?.[0]?.url,
+                      verifiedSeller: isSellerVerified(item.ad.user),
+                    }}
+                    href={buildProductDetailsRoute(item.ad.id)}
+                    showBadge={Boolean(getAdConditionLabel(item.ad.condition))}
+                    badgeLabel={getAdConditionLabel(item.ad.condition) ?? undefined}
+                    interactive
+                    variant="list"
+                    clampTitleLines={2}
+                    clampDescriptionLines={3}
+                    clampLocationLines={1}
+                    imageHeightClassName="h-[230px] sm:h-[260px]"
                     onClick={() => navigate(buildProductDetailsRoute(item.ad.id))}
                   />
                 ))}
