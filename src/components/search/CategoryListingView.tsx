@@ -469,7 +469,7 @@ export default function CategoryListingView({ config, query, navigate, locationF
           ) : null}
 
           {loading ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-5 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <article key={index} className="rounded-[24px] border border-[#ddd9d2] bg-white p-3 shadow-[0_8px_24px_rgba(31,29,39,0.05)]">
                   <div className="h-[230px] animate-pulse rounded-[18px] bg-[#f2f2f4] sm:h-[260px]" />
@@ -497,7 +497,7 @@ export default function CategoryListingView({ config, query, navigate, locationF
               </p>
             </div>
           ) : view === "grid" ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-5 xl:grid-cols-3">
               {filteredAds.map((ad) => (
                 <ListingCard
                   key={ad.id}
