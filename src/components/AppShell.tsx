@@ -10,6 +10,7 @@ import { ALL_NIGERIA_LOCATION, NIGERIAN_LOCATIONS, getCategorySearchContext, isS
 import { getToken } from "../services/auth";
 import { api } from "../services/api";
 import { getRealtimeSocket, UNREAD_MESSAGES_REFRESH_EVENT, UNREAD_NOTIFICATIONS_REFRESH_EVENT } from "../services/realtime";
+import { isProfileComplete, getProfileCompletionRedirect } from "../lib/profileCompletion";
 
 type NavigateTo = (to: string) => void;
 type HeaderIcon = "bell" | "bookmark" | "mail";
@@ -117,6 +118,13 @@ export function SiteHeader({
       onUnverified: () => showError("Please verify your email to continue."),
     });
     if (!canContinue) return;
+
+    // Check if user profile is complete (phone + location)
+    if (currentUserRecord && !isProfileComplete(currentUserRecord)) {
+      showError("Complete your phone number and location before posting an ad.");
+      navigate(getProfileCompletionRedirect("/post-ad"));
+      return;
+    }
 
     navigate(ROUTES.POST);
   };

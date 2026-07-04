@@ -10,6 +10,7 @@ import FormInput from "../components/ui/FormInput";
 import FormButton from "../components/ui/FormButton";
 import LegalConsentModal, { type LegalDocumentType } from "../components/auth/LegalConsentModal";
 import GoogleSignInButton from "../components/auth/GoogleSignInButton";
+import { isProfileComplete, getProfileCompletionRedirect } from "../lib/profileCompletion";
 
 const LEGAL_CONSENT_VERSION = "2026-06-09";
 
@@ -231,6 +232,13 @@ export default function SignUpPage() {
             persistLegalConsentFromUser(res.data.user);
             clearUserCache(); // Clear cache for new user
             success("Account created successfully");
+            
+            // Check if profile is complete; if not, redirect to profile completion
+            if (!isProfileComplete(res.data.user)) {
+              navigate(getProfileCompletionRedirect());
+              return;
+            }
+            
             // Redirect to email verification if email not verified, otherwise to welcome
             const isEmailVerified = res.data.user.emailVerifiedAt !== null && res.data.user.emailVerifiedAt !== undefined;
             navigate(isEmailVerified ? "/welcome" : "/verify-email");

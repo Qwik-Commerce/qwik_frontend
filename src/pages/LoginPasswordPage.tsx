@@ -10,6 +10,7 @@ import FormCheckbox from "../components/ui/FormCheckbox";
 import FormButton from "../components/ui/FormButton";
 import { buildVerifyEmailRoute } from "../lib/emailVerification";
 import { resolveUserLoginRedirectFromSearch } from "../lib/authRedirect";
+import { isProfileComplete, getProfileCompletionRedirect } from "../lib/profileCompletion";
 
 function EyeToggleIcon({ visible }: { visible: boolean }) {
   if (visible) {
@@ -108,6 +109,12 @@ export default function LoginPasswordPage() {
             setRole(res.data.user.role);
             persistLegalConsentFromUser(res.data.user);
             clearUserCache(); // Clear cache on login for new user
+
+            // Check if profile is complete; if not, redirect to profile completion
+            if (!isProfileComplete(res.data.user)) {
+              navigate(getProfileCompletionRedirect());
+              return;
+            }
 
             // Normal website login should always continue in user-flow routes.
             const isEmailVerified = res.data.user.emailVerifiedAt !== null && res.data.user.emailVerifiedAt !== undefined;
