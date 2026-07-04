@@ -5,6 +5,7 @@ import { api } from "../../services/api";
 import { persistLegalConsentFromUser, setRole, setToken } from "../../services/auth";
 import { GoogleIcon } from "../icons/SocialIcons";
 import { resolveUserLoginRedirectFromSearch } from "../../lib/authRedirect";
+import { isProfileComplete, getProfileCompletionRedirect } from "../../lib/profileCompletion";
 
 const GIS_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
@@ -195,7 +196,13 @@ export default function GoogleSignInButton({
               setRole(res.data.user.role);
               persistLegalConsentFromUser(res.data.user);
               successRef.current("Signed in with Google");
-              navigateRef.current(userRedirectTarget);
+              
+              // Check if profile is complete; if not, redirect to profile completion
+              if (!isProfileComplete(res.data.user)) {
+                navigateRef.current(getProfileCompletionRedirect());
+              } else {
+                navigateRef.current(userRedirectTarget);
+              }
             } catch (err) {
               showErrorRef.current(err instanceof Error ? err.message : "Google sign-in failed");
               setStatus("ready");

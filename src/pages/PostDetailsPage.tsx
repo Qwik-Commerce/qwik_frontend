@@ -8,6 +8,8 @@ import { getConditionOptionsForCategory, isConditionAllowedForCategory } from ".
 import { ALL_NIGERIA_LOCATION, NIGERIAN_AREAS, NIGERIAN_LOCATIONS } from "../lib/searchContext";
 import { api, isEmailVerificationRequiredError } from "../services/api";
 import { useToast } from "../context/ToastContext";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+import { isProfileComplete, getProfileCompletionRedirect } from "../lib/profileCompletion";
 
 const POST_DRAFT_KEY = "qwik_post_draft";
 
@@ -306,6 +308,7 @@ function Spinner() {
 export default function PostDetailsPage() {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
+  const { user } = useCurrentUser();
   const [categorySlug, setCategorySlug] = useState("");
   const [condition, setCondition] = useState("");
   const [color, setColor] = useState("");
@@ -345,6 +348,13 @@ export default function PostDetailsPage() {
       return;
     }
 
+    // Check if profile is complete before submitting
+    if (!isProfileComplete(user)) {
+      showError("Complete your phone number and location before posting an ad.");
+      navigate(getProfileCompletionRedirect("/post-ad"));
+      return;
+    }
+
     try {
       setSubmitting(true);
       setError(null);
@@ -372,6 +382,14 @@ export default function PostDetailsPage() {
       success("Ad created successfully. You can now promote it or manage it in My Ads.");
       navigate(`/promote-ad?adId=${encodeURIComponent(response.data.id)}`);
     } catch (err) {
+      // Handle profile completion error from backend
+      const errorResponse = (err as any)?.response?.data;
+      if (errorResponse?.code === "PROFILE_INCOMPLETE") {
+        showError("Complete your phone number and location before posting an ad.");
+        navigate(getProfileCompletionRedirect("/post-ad"));
+        return;
+      }
+
       if (isEmailVerificationRequiredError(err)) {
         const verified = await reconcileVerificationRequiredError({
           error: err,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { SiteFooter, SiteHeader } from "../components/AppShell";
 import SettingsSidebar, { MobileSettingsMenu } from "../components/settings/SettingsSidebar";
 import DropdownSelect from "../components/ui/DropdownSelect";
@@ -15,6 +15,7 @@ import { ALL_NIGERIA_LOCATION, NIGERIAN_AREAS, NIGERIAN_LOCATIONS } from "../lib
 import ProfileStatsModal from "../components/settings/ProfileStatsModal";
 import { ROUTES } from "../constants/routes";
 import type { FollowerSeller, FollowingSeller } from "../types";
+import { getSafeProfileCompletionRedirectPath, isProfileComplete } from "../lib/profileCompletion";
 
 type TabKey = "edit-profile" | "company-details" | "chat-settings";
 
@@ -56,10 +57,17 @@ function getVerificationStatusLabel(status?: string | null) {
 }
 
 export default function ProfileSettingsPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
   const { user, display, setUser } = useCurrentUser();
   const profileFallback = (user?.profile ?? {}) as Record<string, unknown>;
+  
+  // Extract query params for required profile mode
+  const searchParams = new URLSearchParams(location.search);
+  const requiredMode = searchParams.get("required") === "true";
+  const redirectParam = searchParams.get("redirect");
+  
   const [activeTab, setActiveTab] = useState<TabKey>("edit-profile");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -160,6 +168,10 @@ export default function ProfileSettingsPage() {
 
   const stateOptions = useMemo(() => NIGERIAN_LOCATIONS.filter((s) => s !== ALL_NIGERIA_LOCATION), []);
   const areasForState = locationState ? NIGERIAN_AREAS[locationState] : undefined;
+    const profileIsComplete = useMemo(
+      () => isProfileComplete({ phone, locationState, locationArea }),
+      [locationArea, locationState, phone]
+    );
     const hasChanges = useMemo(() => {
       if (!initialProfile) return false;
       return (
@@ -194,6 +206,23 @@ export default function ProfileSettingsPage() {
 
     const handleSaveProfile = async () => {
       if (loading || !isEditMode || !hasChanges) return;
+      
+      // In required mode, validate that phone, state, and area are filled
+      if (requiredMode) {
+        if (!phone.trim()) {
+          showError("Phone number is required");
+          return;
+        }
+        if (!locationState.trim()) {
+          showError("State is required");
+          return;
+        }
+        if (!locationArea.trim()) {
+          showError("Area is required");
+          return;
+        }
+      }
+      
       try {
         setLoading(true);
         let nextAvatarUrl = avatarUrl;
@@ -222,6 +251,14 @@ export default function ProfileSettingsPage() {
         setSelectedLogoName("");
         setIsEditMode(false);
         success("Profile updated");
+        
+        // In required mode, navigate only when profile is complete and redirect path is safe.
+        if (requiredMode && profileIsComplete) {
+          const safeRedirect = getSafeProfileCompletionRedirectPath(redirectParam);
+          if (safeRedirect) {
+            navigate(safeRedirect);
+          }
+        }
       } catch (error) {
         showError(error instanceof Error ? error.message : "Failed to update profile");
       } finally {
@@ -414,6 +451,13 @@ export default function ProfileSettingsPage() {
 
               {activeTab === "edit-profile" ? (
                 <>
+                    {requiredMode && !profileIsComplete && (
+                      <div className="mb-6 rounded-[10px] border border-red-300 bg-red-50 px-4 py-3">
+                        <p className="text-[14px] font-medium text-red-700">
+                          Complete your profile to post ads. Phone number, state and area are required.
+                        </p>
+                      </div>
+                    )}
                     <div className="mb-5 flex flex-wrap items-center gap-3">
                       <button
                         type="button"
@@ -460,12 +504,15 @@ export default function ProfileSettingsPage() {
                   <label className="mb-2 block text-[15px] text-[#94919d]">Email</label>
                     <input type="email" value={email} readOnly disabled className="mb-5 h-12 w-full rounded-[10px] border border-[#dedde4] bg-transparent px-3 text-[15px] outline-none disabled:cursor-not-allowed disabled:bg-[#f5f4f7] disabled:text-[#8f8a98]" placeholder="@mail" />
 
-                  <label className="mb-2 block text-[15px] text-[#94919d]">Phone</label>
+                  <label className="mb-2 block text-[15px] text-[#94919d]">
+                    Phone
+                    {requiredMode && <span className="text-red-600"> *</span>}
+                  </label>
                     <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!isEditMode || loading} className="mb-5 h-12 w-full rounded-[10px] border border-[#dedde4] bg-transparent px-3 text-[15px] outline-none disabled:cursor-not-allowed disabled:bg-[#f5f4f7] disabled:text-[#8f8a98]" placeholder="0800 000 0000" />
 
                   <div className="mb-5 space-y-4">
                     <DropdownSelect
-                      label="State"
+                      label={`State${requiredMode ? " *" : ""}`}
                       placeholder="Select your state"
                       value={locationState}
                       options={stateOptions.map((s) => ({ value: s, label: s }))}
@@ -474,7 +521,7 @@ export default function ProfileSettingsPage() {
                     />
                     {locationState && areasForState ? (
                       <DropdownSelect
-                        label="Area"
+                        label={`Area${requiredMode ? " *" : ""}`}
                         placeholder="Select your area"
                         value={locationArea}
                         options={areasForState.map((a) => ({ value: a, label: a }))}
@@ -483,7 +530,10 @@ export default function ProfileSettingsPage() {
                       />
                     ) : locationState ? (
                       <div>
-                        <label className="mb-2 block text-[15px] text-[#94919d]">Area</label>
+                        <label className="mb-2 block text-[15px] text-[#94919d]">
+                          Area
+                          {requiredMode && <span className="text-red-600"> *</span>}
+                        </label>
                           <input type="text" value={locationArea} onChange={(e) => setLocationArea(e.target.value)} disabled={!isEditMode || loading} className="h-12 w-full rounded-[10px] border border-[#dedde4] bg-transparent px-3 text-[15px] outline-none disabled:cursor-not-allowed disabled:bg-[#f5f4f7] disabled:text-[#8f8a98]" placeholder="City or area (optional)" />
                       </div>
                     ) : null}
