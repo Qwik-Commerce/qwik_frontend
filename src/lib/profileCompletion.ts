@@ -1,10 +1,12 @@
 import type { User } from "../types";
 
+export type ProfileCompletionFields = Pick<User, "phone" | "locationState" | "locationArea">;
+
 /**
  * Checks if a user's profile is complete for marketplace actions.
  * Required fields: phone, locationState, locationArea (non-empty, non-whitespace strings)
  */
-export function isProfileComplete(user: User | null | undefined): boolean {
+export function isProfileComplete(user: ProfileCompletionFields | null | undefined): boolean {
   if (!user) return false;
   return (
     isFieldFilled(user.phone) &&
@@ -16,7 +18,7 @@ export function isProfileComplete(user: User | null | undefined): boolean {
 /**
  * Returns array of missing required fields for profile completion.
  */
-export function getProfileCompletionGaps(user: User | null | undefined): string[] {
+export function getProfileCompletionGaps(user: ProfileCompletionFields | null | undefined): string[] {
   if (!user) return ["phone", "locationState", "locationArea"];
   
   const gaps: string[] = [];
@@ -42,6 +44,14 @@ export function getProfileCompletionRedirect(currentPath?: string): string {
   }
   
   return `/profile-settings?${params.toString()}`;
+}
+
+/**
+ * Returns a safe redirect path or null when the path should not be used.
+ */
+export function getSafeProfileCompletionRedirectPath(path?: string | null): string | null {
+  if (!path) return null;
+  return sanitizeRedirectPath(path);
 }
 
 /**

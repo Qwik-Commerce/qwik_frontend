@@ -15,7 +15,7 @@ import { ALL_NIGERIA_LOCATION, NIGERIAN_AREAS, NIGERIAN_LOCATIONS } from "../lib
 import ProfileStatsModal from "../components/settings/ProfileStatsModal";
 import { ROUTES } from "../constants/routes";
 import type { FollowerSeller, FollowingSeller } from "../types";
-import { isProfileComplete } from "../lib/profileCompletion";
+import { getSafeProfileCompletionRedirectPath, isProfileComplete } from "../lib/profileCompletion";
 
 type TabKey = "edit-profile" | "company-details" | "chat-settings";
 
@@ -168,6 +168,10 @@ export default function ProfileSettingsPage() {
 
   const stateOptions = useMemo(() => NIGERIAN_LOCATIONS.filter((s) => s !== ALL_NIGERIA_LOCATION), []);
   const areasForState = locationState ? NIGERIAN_AREAS[locationState] : undefined;
+    const profileIsComplete = useMemo(
+      () => isProfileComplete({ phone, locationState, locationArea }),
+      [locationArea, locationState, phone]
+    );
     const hasChanges = useMemo(() => {
       if (!initialProfile) return false;
       return (
@@ -248,9 +252,12 @@ export default function ProfileSettingsPage() {
         setIsEditMode(false);
         success("Profile updated");
         
-        // If in required mode and redirect param exists, navigate to redirect target
-        if (requiredMode && redirectParam) {
-          navigate(redirectParam);
+        // In required mode, navigate only when profile is complete and redirect path is safe.
+        if (requiredMode && profileIsComplete) {
+          const safeRedirect = getSafeProfileCompletionRedirectPath(redirectParam);
+          if (safeRedirect) {
+            navigate(safeRedirect);
+          }
         }
       } catch (error) {
         showError(error instanceof Error ? error.message : "Failed to update profile");
@@ -444,7 +451,7 @@ export default function ProfileSettingsPage() {
 
               {activeTab === "edit-profile" ? (
                 <>
-                    {requiredMode && (
+                    {requiredMode && !profileIsComplete && (
                       <div className="mb-6 rounded-[10px] border border-red-300 bg-red-50 px-4 py-3">
                         <p className="text-[14px] font-medium text-red-700">
                           Complete your profile to post ads. Phone number, state and area are required.
