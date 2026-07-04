@@ -12,6 +12,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children, title, description, headerAction }: AdminLayoutProps) {
   const mobileLinks = [
     { label: 'Dashboard', path: '/admin' },
+    { label: 'Analytics', path: '/admin/analytics' },
     { label: 'Users', path: '/admin/users' },
     { label: 'Ads', path: '/admin/ads' },
     { label: 'Reports', path: '/admin/reports' },
