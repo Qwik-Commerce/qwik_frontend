@@ -73,8 +73,8 @@ export default function ListingCard({
           }}
         />
       ) : null}
-      <div className={isList ? "grid grid-cols-1 gap-4 md:grid-cols-[260px_minmax(0,1fr)] md:items-center" : ""}>
-        <div className={`relative w-full overflow-hidden rounded-[18px] bg-white sm:rounded-[22px] ${isList ? "h-[210px] sm:h-[230px] md:h-[190px]" : imageHeightClassName}`.trim()}>
+      <div className={isList ? "grid grid-cols-[120px_minmax(0,1fr)] items-start gap-3 sm:grid-cols-[220px_minmax(0,1fr)] sm:items-center sm:gap-5" : ""}>
+        <div className={`relative w-full overflow-hidden rounded-[18px] bg-white sm:rounded-[22px] ${isList ? "h-[120px] sm:h-[190px]" : imageHeightClassName}`.trim()}>
           {item.verifiedSeller ? <VerifiedSellerBadge /> : null}
           {item.image ? (
             <FallbackImage
