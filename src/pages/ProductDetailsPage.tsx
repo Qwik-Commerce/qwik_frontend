@@ -966,43 +966,15 @@ export default function ProductDetailsPage() {
                   </aside>
 
                   <div className="rounded-[14px] border border-[#e5e3e9] bg-white p-4 sm:p-5">
-                    <h4 className="mb-2 text-[18px] font-semibold">Safety tips</h4>
-                    <ul className="space-y-1.5 text-[13px] text-[#6f6b77]">
-                      <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Inspect the item before payment</span></li>
-                      <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Meet seller in a safe public place</span></li>
-                      <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Do not send advance payment</span></li>
-                      <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Verify item condition and documents</span></li>
-                      <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Report suspicious listings</span></li>
-                    </ul>
-                    <div className="mt-3 flex items-center gap-2">
-                      {isOwner ? (
-                        <button
-                          className="rounded-[8px] bg-badge-bg px-3 py-2 text-[13px] text-[#ff9715] transition-colors duration-200 hover:bg-[#ffe2c5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb357] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                          onClick={handleMarkUnavailable}
-                          disabled={markingUnavailable}
-                          type="button"
-                        >
-                          {markingUnavailable ? "Marking..." : "Mark Unavailable"}
-                        </button>
-                      ) : null}
-                      {!isOwner ? (
-                        <button
-                          type="button"
-                          onClick={handleOpenReportModal}
-                          className="rounded-[8px] border border-[#ffb46a] bg-[#fff7ef] px-3 py-2 text-[13px] font-medium text-[#d97706] transition-colors duration-200 hover:bg-[#ffefdc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb357] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                        >
-                          Report listing
-                        </button>
-                      ) : null}
-                      {!isAuthenticated ? (
-                        <button
-                          type="button"
-                          onClick={() => navigate("/login")}
-                          className="text-[12px] text-[#9f9ba8] underline-offset-2 transition hover:text-[#7f7b87] hover:underline"
-                        >
-                          Login to report
-                        </button>
-                      ) : null}
+                    <h3 className="mb-3 text-[36px] font-normal leading-none">Product Details</h3>
+                    <p className="mb-5 max-w-[680px] text-[15px] leading-[1.45] text-[#5f5c68]">{ad.description}</p>
+                    <div className="grid grid-cols-1 gap-x-8 gap-y-4 text-[14px] sm:grid-cols-2">
+                      {detailRows.map(([k, v]: [string, unknown]) => (
+                        <div key={k}>
+                          <p className="text-[#8f8b98]">{k}</p>
+                          <p className="font-medium text-[#2d2b33]">{String(v)}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1012,15 +984,43 @@ export default function ProductDetailsPage() {
 
           <section className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1.08fr_0.92fr] lg:gap-6">
             <div className="rounded-[14px] border border-[#e5e3e9] bg-white p-4 sm:p-5">
-              <h3 className="mb-3 text-[36px] font-normal leading-none">Product Details</h3>
-              <p className="mb-5 max-w-[680px] text-[15px] leading-[1.45] text-[#5f5c68]">{ad.description}</p>
-              <div className="grid grid-cols-1 gap-x-8 gap-y-4 text-[14px] sm:grid-cols-2">
-                {detailRows.map(([k, v]: [string, unknown]) => (
-                  <div key={k}>
-                    <p className="text-[#8f8b98]">{k}</p>
-                    <p className="font-medium text-[#2d2b33]">{String(v)}</p>
-                  </div>
-                ))}
+              <h4 className="mb-2 text-[18px] font-semibold">Safety tips</h4>
+              <ul className="space-y-1.5 text-[13px] text-[#6f6b77]">
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Inspect the item before payment</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Meet seller in a safe public place</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Do not send advance payment</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Verify item condition and documents</span></li>
+                <li className="flex items-start gap-2"><span className="mt-0.5 text-[#57b77a]">•</span><span>Report suspicious listings</span></li>
+              </ul>
+              <div className="mt-3 flex items-center gap-2">
+                {isOwner ? (
+                  <button
+                    className="rounded-[8px] bg-badge-bg px-3 py-2 text-[13px] text-[#ff9715] transition-colors duration-200 hover:bg-[#ffe2c5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb357] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                    onClick={handleMarkUnavailable}
+                    disabled={markingUnavailable}
+                    type="button"
+                  >
+                    {markingUnavailable ? "Marking..." : "Mark Unavailable"}
+                  </button>
+                ) : null}
+                {!isOwner ? (
+                  <button
+                    type="button"
+                    onClick={handleOpenReportModal}
+                    className="rounded-[8px] border border-[#ffb46a] bg-[#fff7ef] px-3 py-2 text-[13px] font-medium text-[#d97706] transition-colors duration-200 hover:bg-[#ffefdc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb357] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  >
+                    Report listing
+                  </button>
+                ) : null}
+                {!isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/login")}
+                    className="text-[12px] text-[#9f9ba8] underline-offset-2 transition hover:text-[#7f7b87] hover:underline"
+                  >
+                    Login to report
+                  </button>
+                ) : null}
               </div>
             </div>
 
