@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "../../context/ToastContext";
 import { api } from "../../services/api";
 import { persistLegalConsentFromUser, setRole, setToken } from "../../services/auth";
 import { GoogleIcon } from "../icons/SocialIcons";
+import { resolveUserLoginRedirectFromSearch } from "../../lib/authRedirect";
 
 const GIS_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
@@ -128,7 +129,9 @@ export default function GoogleSignInButton({
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { error: showError, success } = useToast();
+  const userRedirectTarget = resolveUserLoginRedirectFromSearch(location.search, "/welcome");
 
   const navigateRef = useRef(navigate);
   const showErrorRef = useRef(showError);
@@ -192,7 +195,7 @@ export default function GoogleSignInButton({
               setRole(res.data.user.role);
               persistLegalConsentFromUser(res.data.user);
               successRef.current("Signed in with Google");
-              navigateRef.current(res.data.user.role === "ADMIN" ? "/admin" : "/welcome");
+              navigateRef.current(userRedirectTarget);
             } catch (err) {
               showErrorRef.current(err instanceof Error ? err.message : "Google sign-in failed");
               setStatus("ready");
@@ -229,7 +232,7 @@ export default function GoogleSignInButton({
       activeCredentialHandler = null;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isConfigured]);
+  }, [isConfigured, userRedirectTarget]);
 
   const triggerGooglePrompt = () => {
     if (!requireLegalConsent()) return;

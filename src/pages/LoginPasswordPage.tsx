@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useToast } from "../context/ToastContext";
 import { getLoginEmail, persistLegalConsentFromUser, setRole, setToken } from "../services/auth";
@@ -8,6 +8,8 @@ import AuthLayout from "../components/layout/AuthLayout";
 import FormInput from "../components/ui/FormInput";
 import FormCheckbox from "../components/ui/FormCheckbox";
 import FormButton from "../components/ui/FormButton";
+import { buildVerifyEmailRoute } from "../lib/emailVerification";
+import { resolveUserLoginRedirectFromSearch } from "../lib/authRedirect";
 
 function EyeToggleIcon({ visible }: { visible: boolean }) {
   if (visible) {
@@ -31,6 +33,7 @@ function EyeToggleIcon({ visible }: { visible: boolean }) {
 
 export default function LoginPasswordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { error: showError } = useToast();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -38,6 +41,7 @@ export default function LoginPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const canLogin = password.length >= 6;
   const loginEmail = getLoginEmail();
+  const userRedirectTarget = resolveUserLoginRedirectFromSearch(location.search, "/welcome");
 
   return (
     <AuthLayout
@@ -105,14 +109,9 @@ export default function LoginPasswordPage() {
             persistLegalConsentFromUser(res.data.user);
             clearUserCache(); // Clear cache on login for new user
 
-            // Redirect based on user role and email verification status
-            if (res.data.user.role === "ADMIN") {
-              navigate("/admin");
-            } else {
-              // Redirect to email verification if email not verified, otherwise to welcome
-              const isEmailVerified = res.data.user.emailVerifiedAt !== null && res.data.user.emailVerifiedAt !== undefined;
-              navigate(isEmailVerified ? "/welcome" : "/verify-email");
-            }
+            // Normal website login should always continue in user-flow routes.
+            const isEmailVerified = res.data.user.emailVerifiedAt !== null && res.data.user.emailVerifiedAt !== undefined;
+            navigate(isEmailVerified ? userRedirectTarget : buildVerifyEmailRoute(userRedirectTarget));
           } catch (error) {
             showError(error instanceof Error ? error.message : "Login failed");
           } finally {

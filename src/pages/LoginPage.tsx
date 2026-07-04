@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/layout/AuthLayout";
 import FormInput from "../components/ui/FormInput";
 import FormButton from "../components/ui/FormButton";
 import { hasAcceptedLegalConsentSnapshot, setAcceptedLegalConsentSnapshot, setLoginEmail } from "../services/auth";
 import LegalConsentModal, { type LegalDocumentType } from "../components/auth/LegalConsentModal";
 import GoogleSignInButton from "../components/auth/GoogleSignInButton";
+import { buildRouteWithUserSafeNext } from "../lib/authRedirect";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [acceptedLegal, setAcceptedLegal] = useState(() => hasAcceptedLegalConsentSnapshot());
   const [legalModal, setLegalModal] = useState<LegalDocumentType | null>(null);
@@ -71,7 +73,7 @@ export default function LoginPage() {
         buttonClassName={`h-[52px] rounded-[14px] text-[15px] font-semibold ${canContinue ? "bg-gradient-to-r from-amber to-orange text-white shadow-glow hover:opacity-95" : ""}`}
         onClick={() => {
           setLoginEmail(email.trim().toLowerCase());
-          navigate("/login-password");
+          navigate(buildRouteWithUserSafeNext("/login-password", location.search));
         }}
       >
         Continue
