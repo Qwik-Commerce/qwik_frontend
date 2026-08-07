@@ -82,7 +82,6 @@ function sanitizeRedirectPath(path: string): string | null {
   // Allow safe marketplace routes
   if (
     normalized === "/post" ||
-    normalized === "/post-ad" ||
     normalized === "/post-details" ||
     normalized === "/new-advert-details" ||
     normalized.startsWith("/") && !normalized.includes("//")

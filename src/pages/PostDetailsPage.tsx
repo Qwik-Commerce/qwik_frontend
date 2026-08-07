@@ -351,7 +351,7 @@ export default function PostDetailsPage() {
     // Check if profile is complete before submitting
     if (!isProfileComplete(user)) {
       showError("Complete your phone number and location before posting an ad.");
-      navigate(getProfileCompletionRedirect("/post-ad"));
+      navigate(getProfileCompletionRedirect("/post"));
       return;
     }
 
@@ -386,7 +386,7 @@ export default function PostDetailsPage() {
       const errorResponse = (err as any)?.response?.data;
       if (errorResponse?.code === "PROFILE_INCOMPLETE") {
         showError("Complete your phone number and location before posting an ad.");
-        navigate(getProfileCompletionRedirect("/post-ad"));
+        navigate(getProfileCompletionRedirect("/post"));
         return;
       }
 

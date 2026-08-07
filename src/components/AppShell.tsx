@@ -122,7 +122,7 @@ export function SiteHeader({
     // Check if user profile is complete (phone + location)
     if (currentUserRecord && !isProfileComplete(currentUserRecord)) {
       showError("Complete your phone number and location before posting an ad.");
-      navigate(getProfileCompletionRedirect("/post-ad"));
+      navigate(getProfileCompletionRedirect("/post"));
       return;
     }
 
