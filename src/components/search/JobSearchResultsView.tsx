@@ -256,6 +256,7 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
   const [selectedStripCategory, setSelectedStripCategory] = useState<JobStripType | "all">(initialStrip ?? "all");
   const [jobResults, setJobResults] = useState<MockJobListing[]>([]);
   const [resultTotal, setResultTotal] = useState(0);
+  const [loadingAds, setLoadingAds] = useState(true);
   const maxSalary = useMemo(() => Math.max(...jobResults.map((item) => item.ad.price), 100200000), [jobResults]);
   const [selectedMaxSalary, setSelectedMaxSalary] = useState(100200000);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -279,12 +280,17 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
 
   useEffect(() => {
     const loadAds = async () => {
-      const params = new URLSearchParams({ category: "jobs", pageSize: "24", imagesLimit: "1" });
-      if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
-      if (locationFilter) params.set("location", locationFilter);
-      const response = await api.ads(`?${params.toString()}`);
-      setJobResults(response.data.map(toJobResult));
-      setResultTotal(response.meta?.total ?? response.data.length);
+      setLoadingAds(true);
+      try {
+        const params = new URLSearchParams({ category: "jobs", pageSize: "24", imagesLimit: "1" });
+        if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
+        if (locationFilter) params.set("location", locationFilter);
+        const response = await api.ads(`?${params.toString()}`);
+        setJobResults(response.data.map(toJobResult));
+        setResultTotal(response.meta?.total ?? response.data.length);
+      } finally {
+        setLoadingAds(false);
+      }
     };
     void loadAds();
   }, [query, locationFilter]);
@@ -380,7 +386,7 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
               </button>
               <div>
                 <h1 className="text-[28px] font-medium tracking-[-0.02em] text-[#1f1d27] sm:text-[36px]">
-                  Found <span className="text-[#ff9715]">{resultTotal.toLocaleString()}</span> results for "Job"
+                  Found <span className="text-[#ff9715]">{loadingAds ? "\u2026" : resultTotal.toLocaleString()}</span> results for "Job"
                 </h1>
                 <p className="mt-3 text-[24px] font-medium text-[#1f1d27]">Jobs In Nigeria</p>
               </div>

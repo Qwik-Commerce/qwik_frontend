@@ -587,7 +587,7 @@ export default function SearchResultsPage() {
                   Filters
                 </button>
                 <h1 className="text-[28px] font-medium tracking-[-0.02em] text-[#1f1d27] sm:text-[36px]">
-                  Found <span className="text-[#ff9715]">{displayedResultCount.toLocaleString()}</span> results for “{resultsLabel}”
+                  Found <span className="text-[#ff9715]">{loadingAds ? "\u2026" : displayedResultCount.toLocaleString()}</span> results for "{resultsLabel}"
                 </h1>
               </div>
               <div className="flex items-center gap-2 self-start">

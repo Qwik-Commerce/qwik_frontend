@@ -326,6 +326,7 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
   const [selectedStripCategory, setSelectedStripCategory] = useState<StripCategory | "all" >("all");
   const [electronicsResults, setElectronicsResults] = useState<MockElectronicsListing[]>([]);
   const [resultTotal, setResultTotal] = useState(0);
+  const [loadingAds, setLoadingAds] = useState(true);
   const [resultMode, setResultMode] = useState<SearchResultMode>("exact");
   const [relatedTo, setRelatedTo] = useState("");
   const maxPrice = useMemo(
@@ -355,14 +356,19 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
 
   useEffect(() => {
     const loadAds = async () => {
-      const params = new URLSearchParams({ category: "electronics", pageSize: "24", imagesLimit: "1" });
-      if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
-      if (locationFilter) params.set("location", locationFilter);
-      const response = await api.ads(`?${params.toString()}`);
-      setElectronicsResults(response.data.map(toElectronicsResult));
-      setResultTotal(response.meta?.total ?? response.data.length);
-      setResultMode(response.meta?.resultMode === "related" ? "related" : "exact");
-      setRelatedTo(response.meta?.relatedTo ?? query);
+      setLoadingAds(true);
+      try {
+        const params = new URLSearchParams({ category: "electronics", pageSize: "24", imagesLimit: "1" });
+        if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
+        if (locationFilter) params.set("location", locationFilter);
+        const response = await api.ads(`?${params.toString()}`);
+        setElectronicsResults(response.data.map(toElectronicsResult));
+        setResultTotal(response.meta?.total ?? response.data.length);
+        setResultMode(response.meta?.resultMode === "related" ? "related" : "exact");
+        setRelatedTo(response.meta?.relatedTo ?? query);
+      } finally {
+        setLoadingAds(false);
+      }
     };
     void loadAds();
   }, [query, locationFilter]);
@@ -470,7 +476,7 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
               </button>
               <div>
                 <h1 className="text-[28px] font-medium tracking-[-0.02em] text-[#1f1d27] sm:text-[36px]">
-                  Found <span className="text-[#ff9715]">{resultTotal.toLocaleString()}</span> results for “Electronics”
+                  Found <span className="text-[#ff9715]">{loadingAds ? "\u2026" : resultTotal.toLocaleString()}</span> results for "Electronics"
                 </h1>
                 <p className="mt-3 text-[24px] font-medium text-[#1f1d27]">Laptops and Computer In Nigeria</p>
               </div>
@@ -520,7 +526,19 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
             </div>
           ) : null}
 
-          {filteredResults.length === 0 ? (
+          {loadingAds ? (
+            <div className="grid grid-cols-2 gap-5 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <article key={i} className="rounded-[22px] bg-white p-3 shadow-[0_10px_26px_rgba(31,29,39,0.04)]">
+                  <div className="h-[230px] animate-pulse rounded-[16px] bg-[#f2f2f4] sm:h-[260px]" />
+                  <div className="space-y-3 pt-4">
+                    <div className="h-5 w-28 animate-pulse rounded bg-[#f2f2f4]" />
+                    <div className="h-4 w-4/5 animate-pulse rounded bg-[#f2f2f4]" />
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : filteredResults.length === 0 ? (
             <div className="rounded-[24px] border border-[#ddd9d2] bg-white px-6 py-12 text-center shadow-[0_8px_24px_rgba(31,29,39,0.05)]">
               <h2 className="text-[22px] font-medium text-[#1f1d27]">
                 {resultMode === "related" ? "No exact results found" : "No results found"}

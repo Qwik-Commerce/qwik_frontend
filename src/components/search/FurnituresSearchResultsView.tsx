@@ -317,6 +317,7 @@ export default function FurnituresSearchResultsView({ query, navigate, view, loc
   const [selectedCondition, setSelectedCondition] = useState<"all" | FurnitureCondition>("all");
   const [furnitureResults, setFurnitureResults] = useState<MockFurnitureListing[]>([]);
   const [resultTotal, setResultTotal] = useState(0);
+  const [loadingAds, setLoadingAds] = useState(true);
   const maxPrice = useMemo(() => Math.max(...furnitureResults.map((item) => item.ad.price), 100200000), [furnitureResults]);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState(100200000);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -340,12 +341,17 @@ export default function FurnituresSearchResultsView({ query, navigate, view, loc
 
   useEffect(() => {
     const loadAds = async () => {
-      const params = new URLSearchParams({ category: "furniture-appliances", pageSize: "24", imagesLimit: "1" });
-      if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
-      if (locationFilter) params.set("location", locationFilter);
-      const response = await api.ads(`?${params.toString()}`);
-      setFurnitureResults(response.data.map(toFurnitureResult));
-      setResultTotal(response.meta?.total ?? response.data.length);
+      setLoadingAds(true);
+      try {
+        const params = new URLSearchParams({ category: "furniture-appliances", pageSize: "24", imagesLimit: "1" });
+        if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
+        if (locationFilter) params.set("location", locationFilter);
+        const response = await api.ads(`?${params.toString()}`);
+        setFurnitureResults(response.data.map(toFurnitureResult));
+        setResultTotal(response.meta?.total ?? response.data.length);
+      } finally {
+        setLoadingAds(false);
+      }
     };
     void loadAds();
   }, [query, locationFilter]);
@@ -459,7 +465,7 @@ export default function FurnituresSearchResultsView({ query, navigate, view, loc
               </button>
               <div>
                 <h1 className="text-[28px] font-medium tracking-[-0.02em] text-[#1f1d27] sm:text-[36px]">
-                  Found <span className="text-[#ff9715]">{resultTotal.toLocaleString()}</span> results for “Furnitures & Appliances”
+                  Found <span className="text-[#ff9715]">{loadingAds ? "\u2026" : resultTotal.toLocaleString()}</span> results for "Furnitures & Appliances"
                 </h1>
                 <p className="mt-3 text-[24px] font-medium text-[#1f1d27]">Furnitures In Nigeria</p>
               </div>
