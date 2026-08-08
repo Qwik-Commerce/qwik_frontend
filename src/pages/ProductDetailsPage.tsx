@@ -660,18 +660,20 @@ export default function ProductDetailsPage() {
   const lightboxSlides = gallery.map((src: string) => ({ src }));
   const selected = gallery[activeImage] ?? gallery[0];
   const specs = ad.specifications || {};
-  const specArray = Object.entries(specs).map(([k, v]) => [
-    k.replace(/([A-Z])/g, " $1").replace(/^./, (str: string) => str.toUpperCase()).trim(),
-    v,
-  ]) as Array<[string, unknown]>;
+  const specArray = Object.entries(specs)
+    .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "" && String(v).toUpperCase() !== "NONE")
+    .map(([k, v]) => [
+      k.replace(/([A-Z])/g, " $1").replace(/^./, (str: string) => str.toUpperCase()).trim(),
+      v,
+    ]) as Array<[string, unknown]>;
   const sellerName = ad.user?.fullName || "Seller";
   const sellerAvatarUrl = ad.user?.profile?.avatarUrl || "";
   const sellerMeta = formatMemberSince(ad.user?.createdAt);
   const productPrice = Number.isFinite(ad.price) ? ad.price : undefined;
-  const seoTitle = `${ad.title} | QwikBay`;
-  const seoDescription = (ad.description || "Browse this product on QwikBay.").trim().slice(0, 160);
+  const seoTitle = `${ad.title} | Qwik`;
+  const seoDescription = (ad.description || "Browse this product on Qwik.").trim().slice(0, 160);
   const seoImage = ad.images?.[0]?.url;
-  const brandName = ad.brand || ad.category?.name || "QwikBay";
+  const brandName = ad.brand || ad.category?.name || "Qwik";
   const breadcrumbCategory = ad.category?.name || "Listings";
   const availability = ad.status === "SOLD" ? "https://schema.org/SoldOut" : "https://schema.org/InStock";
   const productStructuredData: Record<string, unknown> = {
@@ -972,7 +974,7 @@ export default function ProductDetailsPage() {
                       {detailRows.map(([k, v]: [string, unknown]) => (
                         <div key={k}>
                           <p className="text-[#8f8b98]">{k}</p>
-                          <p className="font-medium text-[#2d2b33]">{String(v)}</p>
+                          <p className="font-medium text-[#2d2b33]">{v === true ? "Yes" : v === false ? "No" : String(v)}</p>
                         </div>
                       ))}
                     </div>
