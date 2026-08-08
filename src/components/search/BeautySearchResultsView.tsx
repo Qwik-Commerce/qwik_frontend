@@ -297,6 +297,7 @@ export default function BeautySearchResultsView({ query, navigate, view, locatio
   const [selectedStripCategory, setSelectedStripCategory] = useState<BeautyType>("Body Lotion");
   const [beautyResults, setBeautyResults] = useState<MockBeautyListing[]>([]);
   const [resultTotal, setResultTotal] = useState(0);
+  const [loadingAds, setLoadingAds] = useState(true);
   const maxPrice = useMemo(() => Math.max(...beautyResults.map((item) => item.ad.price), 100200000), [beautyResults]);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState(100200000);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -320,12 +321,17 @@ export default function BeautySearchResultsView({ query, navigate, view, locatio
 
   useEffect(() => {
     const loadAds = async () => {
-      const params = new URLSearchParams({ category: "beauty", pageSize: "24", imagesLimit: "1" });
-      if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
-      if (locationFilter) params.set("location", locationFilter);
-      const response = await api.ads(`?${params.toString()}`);
-      setBeautyResults(response.data.map(toBeautyResult));
-      setResultTotal(response.meta?.total ?? response.data.length);
+      setLoadingAds(true);
+      try {
+        const params = new URLSearchParams({ category: "beauty", pageSize: "24", imagesLimit: "1" });
+        if (query && !isCategoryMarkerQuery(query)) params.set("q", query);
+        if (locationFilter) params.set("location", locationFilter);
+        const response = await api.ads(`?${params.toString()}`);
+        setBeautyResults(response.data.map(toBeautyResult));
+        setResultTotal(response.meta?.total ?? response.data.length);
+      } finally {
+        setLoadingAds(false);
+      }
     };
     void loadAds();
   }, [query, locationFilter]);
@@ -433,7 +439,7 @@ export default function BeautySearchResultsView({ query, navigate, view, locatio
               </button>
               <div>
                 <h1 className="text-[28px] font-medium tracking-[-0.02em] text-[#1f1d27] sm:text-[36px]">
-                  Found <span className="text-[#ff9715]">{resultTotal.toLocaleString()}</span> results for “Beauty”
+                  Found <span className="text-[#ff9715]">{loadingAds ? "\u2026" : resultTotal.toLocaleString()}</span> results for "Beauty"
                 </h1>
                 <p className="mt-3 text-[24px] font-medium text-[#1f1d27]">Body Care In Nigeria</p>
               </div>

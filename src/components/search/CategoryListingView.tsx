@@ -416,7 +416,7 @@ export default function CategoryListingView({ config, query, navigate, locationF
               </button>
               <div>
                 <h1 className="text-[28px] font-medium tracking-[-0.02em] text-[#1f1d27] sm:text-[36px]">
-                  Found <span className="text-[#ff9715]">{resultTotal.toLocaleString()}</span> results for "{headingQuery}"
+                  Found <span className="text-[#ff9715]">{loading ? "\u2026" : resultTotal.toLocaleString()}</span> results for "{headingQuery}"
                 </h1>
                 <p className="mt-3 text-[24px] font-medium text-[#1f1d27]">{config.heading}</p>
               </div>
