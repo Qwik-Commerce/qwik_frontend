@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://api.qwik.ng/api/sitemap.xml" },
+    { "source": "/sitemaps/:path*", "destination": "https://api.qwik.ng/api/sitemaps/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
