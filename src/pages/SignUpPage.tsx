@@ -11,6 +11,7 @@ import FormButton from "../components/ui/FormButton";
 import LegalConsentModal, { type LegalDocumentType } from "../components/auth/LegalConsentModal";
 import GoogleSignInButton from "../components/auth/GoogleSignInButton";
 import { isProfileComplete, getProfileCompletionRedirect } from "../lib/profileCompletion";
+import SeoHead from "../components/seo/SeoHead";
 
 const LEGAL_CONSENT_VERSION = "2026-06-09";
 
@@ -83,6 +84,7 @@ export default function SignUpPage() {
       onTopPromptActionClick={() => navigate(ROUTES.LOGIN)}
       cardClassName="max-w-[560px]"
     >
+      <SeoHead noindex />
       <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <FormInput
           id="signup-first-name"

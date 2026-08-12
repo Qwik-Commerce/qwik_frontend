@@ -1,6 +1,10 @@
+import { useLocation } from "react-router-dom";
 import PageLayout from "../components/layout/PageLayout";
+import SeoHead from "../components/seo/SeoHead";
+import { buildCanonicalUrl } from "../lib/seoCanonical";
 
 export default function SupportPage() {
+  const location = useLocation();
   const faqs = [
     {
       question: "How do I stay safe when buying?",
@@ -22,6 +26,11 @@ export default function SupportPage() {
 
   return (
     <PageLayout contentClassName="mx-auto w-full max-w-[1728px] px-4 pb-16 pt-8 sm:px-6 lg:px-12 lg:pb-24 lg:pt-10">
+      <SeoHead
+        title="Help & Support | Qwik"
+        description="Get help with your Qwik account, listings, and safety questions. Contact support or browse FAQs."
+        canonicalUrl={buildCanonicalUrl(location.pathname, location.search)}
+      />
       <section className="rounded-[26px] border border-[#eceaf1] bg-[linear-gradient(180deg,#fff9f0_0%,#ffffff_100%)] px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <p className="text-[15px] font-semibold uppercase tracking-[0.08em] text-[#f08a1d]">Help and Support</p>
         <h1 className="mt-3 text-[34px] font-semibold leading-[1.1] text-[#1f1d27] sm:text-[44px]">Need Help With Qwik?</h1>

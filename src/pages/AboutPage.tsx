@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageLayout from "../components/layout/PageLayout";
 import { ROUTES } from "../constants/routes";
+import SeoHead from "../components/seo/SeoHead";
+import { buildCanonicalUrl } from "../lib/seoCanonical";
 
 function ArrowIcon() {
   return (
@@ -185,9 +187,15 @@ function VerifiedBenefit({
 
 export default function AboutPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <PageLayout contentClassName="mx-auto w-full max-w-[1728px] px-4 pb-16 pt-8 sm:px-6 lg:px-12 lg:pb-24 lg:pt-10">
+      <SeoHead
+        title="About Us | Qwik"
+        description="Learn about Qwik, Nigeria's trusted online marketplace connecting buyers and verified sellers nationwide."
+        canonicalUrl={buildCanonicalUrl(location.pathname, location.search)}
+      />
       <section className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(340px,540px)] lg:gap-14">
         <div>
           <p className="text-[16px] font-semibold uppercase tracking-[0.08em] text-[#f08a1d]">About Qwik.NG</p>

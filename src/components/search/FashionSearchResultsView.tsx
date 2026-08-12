@@ -26,6 +26,7 @@ import ListingCard from "../listings/ListingCard";
 import BackButton from "../ui/BackButton";
 import SeoHead from "../seo/SeoHead";
 import { buildCanonicalUrl } from "../../lib/seoCanonical";
+import { buildCategoryBreadcrumbSchema, buildItemListSchema } from "../../lib/seoStructuredData";
 import { CategoryBubbleAvatar } from "./CategoryBubbleAvatar";
 import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
@@ -512,6 +513,10 @@ export default function FashionSearchResultsView({ query, navigate, view, locati
         title="Fashion for Sale in Nigeria | Qwik"
         description="Shop clothing, shoes and fashion accessories for sale across Nigeria on Qwik."
         canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+        structuredData={[
+          buildCategoryBreadcrumbSchema("Fashion", buildCanonicalUrl(routerLocation.pathname, routerLocation.search)),
+          ...(filteredResults.length > 0 ? [buildItemListSchema(filteredResults.map((item) => item.ad))] : []),
+        ]}
       />
       <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (

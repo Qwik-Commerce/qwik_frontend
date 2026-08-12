@@ -21,6 +21,7 @@ import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
 import SeoHead from "../seo/SeoHead";
 import { buildCanonicalUrl } from "../../lib/seoCanonical";
+import { buildCategoryBreadcrumbSchema, buildItemListSchema } from "../../lib/seoStructuredData";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -415,6 +416,10 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
         title="Electronics for Sale in Nigeria | Qwik"
         description="Shop electronics including TVs, laptops, cameras and more for sale across Nigeria on Qwik."
         canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+        structuredData={[
+          buildCategoryBreadcrumbSchema("Electronics", buildCanonicalUrl(routerLocation.pathname, routerLocation.search)),
+          ...(filteredResults.length > 0 ? [buildItemListSchema(filteredResults.map((item) => item.ad))] : []),
+        ]}
       />
       <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (

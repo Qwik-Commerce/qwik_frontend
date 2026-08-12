@@ -21,6 +21,7 @@ import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
 import SeoHead from "../seo/SeoHead";
 import { buildCanonicalUrl } from "../../lib/seoCanonical";
+import { buildCategoryBreadcrumbSchema, buildItemListSchema } from "../../lib/seoStructuredData";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -333,6 +334,10 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
         title="Jobs in Nigeria | Qwik"
         description="Browse job vacancies and career opportunities across Nigeria on Qwik."
         canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+        structuredData={[
+          buildCategoryBreadcrumbSchema("Jobs", buildCanonicalUrl(routerLocation.pathname, routerLocation.search)),
+          ...(filteredResults.length > 0 ? [buildItemListSchema(filteredResults.map((item) => item.ad))] : []),
+        ]}
       />
       <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (

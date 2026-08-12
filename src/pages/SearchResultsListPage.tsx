@@ -27,6 +27,7 @@ import { api } from "../services/api";
 import type { Ad } from "../types";
 import SeoHead from "../components/seo/SeoHead";
 import { buildCanonicalUrl } from "../lib/seoCanonical";
+import { buildCategoryBreadcrumbSchema, buildItemListSchema } from "../lib/seoStructuredData";
 
 type SortValue = "newest" | "price-low" | "price-high";
 type VerifiedValue = "all" | "verified" | "unverified";
@@ -492,6 +493,10 @@ export default function SearchResultsListPage() {
         title={seoTitle}
         description={seoDescription}
         canonicalUrl={buildCanonicalUrl(location.pathname, location.search)}
+        structuredData={[
+          ...(categoryHeading ? [buildCategoryBreadcrumbSchema(categoryHeading, buildCanonicalUrl(location.pathname, location.search))] : []),
+          ...(filteredAds.length > 0 ? [buildItemListSchema(filteredAds)] : []),
+        ]}
       />
       <SiteHeader navigate={navigate} />
 
