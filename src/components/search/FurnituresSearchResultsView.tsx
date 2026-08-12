@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import {
   buildProductDetailsRoute,
   ROUTES,
@@ -18,6 +19,8 @@ import BackButton from "../ui/BackButton";
 import { CategoryBubbleAvatar } from "./CategoryBubbleAvatar";
 import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -308,6 +311,7 @@ function FurnitureFilters({
 }
 
 export default function FurnituresSearchResultsView({ query, navigate, view, locationFilter }: FurnituresSearchResultsViewProps) {
+  const routerLocation = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<"all" | MockFurnitureListing["categoryType"]>("Furnitures");
   const [sortBy, setSortBy] = useState<SortValue>("newest");
   const [selectedType, setSelectedType] = useState<"all" | FurnitureType>("all");
@@ -391,7 +395,13 @@ export default function FurnituresSearchResultsView({ query, navigate, view, loc
   );
 
   return (
-    <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
+    <>
+      <SeoHead
+        title="Furniture & Appliances for Sale in Nigeria | Qwik"
+        description="Find furniture and home appliances for sale across Nigeria on Qwik."
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
+      <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (
         <div className="fixed inset-0 z-[110] bg-[#1f1d27]/38 xl:hidden" onClick={() => setMobileFiltersOpen(false)}>
           <div
@@ -531,6 +541,7 @@ export default function FurnituresSearchResultsView({ query, navigate, view, loc
           </div>
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

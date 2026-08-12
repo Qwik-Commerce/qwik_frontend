@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import {
   buildProductDetailsRoute,
   ROUTES,
@@ -18,6 +19,8 @@ import BackButton from "../ui/BackButton";
 import { CategoryBubbleAvatar } from "./CategoryBubbleAvatar";
 import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -319,6 +322,7 @@ function ElectronicsFilters({
 }
 
 export default function ElectronicsSearchResultsView({ query, navigate, view, locationFilter }: ElectronicsSearchResultsViewProps) {
+  const routerLocation = useLocation();
   const [selectedType, setSelectedType] = useState<"all" | ElectronicsType>("all");
   const [sortBy, setSortBy] = useState<SortValue>("newest");
   const [selectedBrand, setSelectedBrand] = useState<"all" | ElectronicsBrand>("all");
@@ -406,7 +410,13 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
   );
 
   return (
-    <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">
+    <>
+      <SeoHead
+        title="Electronics for Sale in Nigeria | Qwik"
+        description="Shop electronics including TVs, laptops, cameras and more for sale across Nigeria on Qwik."
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
+      <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (
         <div className="fixed inset-0 z-[110] bg-[#1f1d27]/38 xl:hidden" onClick={() => setMobileFiltersOpen(false)}>
           <div
@@ -597,6 +607,7 @@ export default function ElectronicsSearchResultsView({ query, navigate, view, lo
           )}
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { hasValidToken } from "../../services/auth";
 import { ROUTES } from "../../constants/routes";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { buildVerifyEmailRoute } from "../../lib/emailVerification";
+import SeoHead from "../seo/SeoHead";
 
 export interface ProtectedRouteProps {
   children: ReactNode;
@@ -46,5 +47,10 @@ export function ProtectedRoute({ children, redirectTo = ROUTES.LOGIN, requireVer
     }
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <SeoHead noindex />
+      {children}
+    </>
+  );
 }

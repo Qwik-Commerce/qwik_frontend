@@ -6,6 +6,7 @@ import {
 } from "../constants/routes";
 import { SiteFooter, SiteHeader } from "../components/AppShell";
 import BeautySearchResultsView from "../components/search/BeautySearchResultsView";
+import { CATEGORY_LISTING_CONFIGS } from "../components/search/CategoryListingView";
 import ElectronicsSearchResultsView from "../components/search/ElectronicsSearchResultsView";
 import FashionSearchResultsView from "../components/search/FashionSearchResultsView";
 import FurnituresSearchResultsView from "../components/search/FurnituresSearchResultsView";
@@ -24,6 +25,8 @@ import { ALL_NIGERIA_LOCATION, getCategorySearchContext, getLocationSearchParam,
 import { isSellerVerified } from "../lib/sellerVerification";
 import { api } from "../services/api";
 import type { Ad } from "../types";
+import SeoHead from "../components/seo/SeoHead";
+import { buildCanonicalUrl } from "../lib/seoCanonical";
 
 type SortValue = "newest" | "price-low" | "price-high";
 type VerifiedValue = "all" | "verified" | "unverified";
@@ -472,8 +475,24 @@ export default function SearchResultsListPage() {
   );
 
   const results = filteredAds.map(toListing);
+  const categoryHeading = categorySlug ? CATEGORY_LISTING_CONFIGS[categorySlug]?.heading : undefined;
+  const seoTitle = categoryHeading
+    ? `${categoryHeading} | Qwik`
+    : query
+      ? `Search Results for "${query}" | Qwik`
+      : "Browse All Ads in Nigeria | Qwik";
+  const seoDescription = categoryHeading
+    ? `Browse ${categoryHeading} listings across Nigeria on Qwik, Nigeria's trusted online marketplace.`
+    : query
+      ? `Browse search results for "${query}" on Qwik, Nigeria's trusted online marketplace.`
+      : "Browse all ads for sale across Nigeria on Qwik.";
   return (
     <div className="min-h-screen bg-page text-ink">
+      <SeoHead
+        title={seoTitle}
+        description={seoDescription}
+        canonicalUrl={buildCanonicalUrl(location.pathname, location.search)}
+      />
       <SiteHeader navigate={navigate} />
 
       <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">
