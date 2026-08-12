@@ -1,4 +1,7 @@
+import { useLocation } from "react-router-dom";
 import PageLayout from "./PageLayout";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 
 export type LegalSection = {
   title: string;
@@ -14,8 +17,15 @@ type LegalPageLayoutProps = {
 };
 
 export default function LegalPageLayout({ eyebrow, title, subtitle, intro, sections }: LegalPageLayoutProps) {
+  const location = useLocation();
+
   return (
     <PageLayout contentClassName="px-4 py-8 sm:px-6 sm:py-12 lg:px-12 lg:py-16">
+      <SeoHead
+        title={`${title} | Qwik`}
+        description={intro.replace(/\s+/g, " ").trim().slice(0, 160)}
+        canonicalUrl={buildCanonicalUrl(location.pathname, location.search)}
+      />
       <article className="mx-auto max-w-[980px] rounded-[20px] bg-white px-5 py-7 shadow-[0_18px_60px_rgba(31,29,39,0.06)] sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <header className="border-b border-[#ececf0] pb-6 sm:pb-8">
           <p className="mb-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#ff8f00]">{eyebrow}</p>

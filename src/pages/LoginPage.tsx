@@ -7,6 +7,7 @@ import { hasAcceptedLegalConsentSnapshot, setAcceptedLegalConsentSnapshot, setLo
 import LegalConsentModal, { type LegalDocumentType } from "../components/auth/LegalConsentModal";
 import GoogleSignInButton from "../components/auth/GoogleSignInButton";
 import { buildRouteWithUserSafeNext } from "../lib/authRedirect";
+import SeoHead from "../components/seo/SeoHead";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function LoginPage() {
       onTopPromptActionClick={() => navigate("/signup")}
       cardClassName="max-w-[520px]"
     >
+      <SeoHead noindex />
       <FormInput
         id="login-email"
         label="Email"

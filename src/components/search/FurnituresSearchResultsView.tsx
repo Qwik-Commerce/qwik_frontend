@@ -21,6 +21,7 @@ import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
 import SeoHead from "../seo/SeoHead";
 import { buildCanonicalUrl } from "../../lib/seoCanonical";
+import { buildCategoryBreadcrumbSchema, buildItemListSchema } from "../../lib/seoStructuredData";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -400,6 +401,10 @@ export default function FurnituresSearchResultsView({ query, navigate, view, loc
         title="Furniture & Appliances for Sale in Nigeria | Qwik"
         description="Find furniture and home appliances for sale across Nigeria on Qwik."
         canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+        structuredData={[
+          buildCategoryBreadcrumbSchema("Furniture & Appliances", buildCanonicalUrl(routerLocation.pathname, routerLocation.search)),
+          ...(filteredResults.length > 0 ? [buildItemListSchema(filteredResults.map((item) => item.ad))] : []),
+        ]}
       />
       <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (

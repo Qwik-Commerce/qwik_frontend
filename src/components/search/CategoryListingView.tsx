@@ -16,6 +16,7 @@ import { FallbackImage } from "../ui/FallbackImage";
 import { ImagePlaceholder } from "../ui/ImagePlaceholder";
 import SeoHead from "../seo/SeoHead";
 import { buildCanonicalUrl } from "../../lib/seoCanonical";
+import { buildCategoryBreadcrumbSchema, buildItemListSchema } from "../../lib/seoStructuredData";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -362,6 +363,10 @@ export default function CategoryListingView({ config, query, navigate, locationF
         title={`${config.heading} | Qwik`}
         description={`Browse ${config.heading} listings across Nigeria on Qwik, Nigeria's trusted online marketplace.`}
         canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+        structuredData={[
+          buildCategoryBreadcrumbSchema(config.heading, buildCanonicalUrl(routerLocation.pathname, routerLocation.search)),
+          ...(filteredAds.length > 0 ? [buildItemListSchema(filteredAds)] : []),
+        ]}
       />
       <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (

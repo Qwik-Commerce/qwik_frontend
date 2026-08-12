@@ -24,6 +24,7 @@ import { api } from "../services/api";
 import type { Ad, Category } from "../types";
 import SeoHead from "../components/seo/SeoHead";
 import { buildCanonicalUrl } from "../lib/seoCanonical";
+import { buildItemListSchema } from "../lib/seoStructuredData";
 
 type SortValue = "newest" | "price-low" | "price-high";
 type VerifiedValue = "all" | "verified" | "unverified";
@@ -503,6 +504,7 @@ export default function SearchResultsPage() {
         title={query ? `Search Results for "${query}" | Qwik` : "Browse All Ads in Nigeria | Qwik"}
         description={query ? `Browse search results for "${query}" on Qwik, Nigeria's trusted online marketplace.` : "Browse all ads for sale across Nigeria on Qwik."}
         canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+        structuredData={filteredAds.length > 0 ? [buildItemListSchema(filteredAds)] : []}
       />
       <SiteHeader navigate={navigate} />
 
