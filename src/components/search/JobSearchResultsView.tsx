@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import {
   buildProductDetailsRoute,
   ROUTES,
@@ -18,6 +19,8 @@ import BackButton from "../ui/BackButton";
 import { CategoryBubbleAvatar } from "./CategoryBubbleAvatar";
 import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -249,6 +252,7 @@ function JobFilters({
 }
 
 export default function JobSearchResultsView({ query, navigate, view, locationFilter }: JobSearchResultsViewProps) {
+  const routerLocation = useLocation();
   const initialStrip = getJobSearchStrip(query);
   const [selectedCategory, setSelectedCategory] = useState<"all" | JobCategoryType>("all");
   const [sortBy, setSortBy] = useState<SortValue>("newest");
@@ -324,7 +328,13 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
   );
 
   return (
-    <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
+    <>
+      <SeoHead
+        title="Jobs in Nigeria | Qwik"
+        description="Browse job vacancies and career opportunities across Nigeria on Qwik."
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
+      <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (
         <div className="fixed inset-0 z-[110] bg-[#1f1d27]/38 xl:hidden" onClick={() => setMobileFiltersOpen(false)}>
           <div
@@ -452,6 +462,7 @@ export default function JobSearchResultsView({ query, navigate, view, locationFi
           </div>
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

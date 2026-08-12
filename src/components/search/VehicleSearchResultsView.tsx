@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import {
   buildProductDetailsRoute,
   ROUTES,
@@ -19,6 +20,8 @@ import type { Ad } from "../../types";
 import { getAdConditionLabel } from "../../lib/adCondition";
 import { getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
 import { getVehicleBrandOptionsByType } from "../../lib/brandOptions";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -361,6 +364,7 @@ function VehicleFilters({
 }
 
 export default function VehicleSearchResultsView({ query, navigate, view, locationFilter }: VehicleSearchResultsViewProps) {
+  const routerLocation = useLocation();
   const [selectedType, setSelectedType] = useState<"all" | VehicleType>(() => inferVehicleTypeFromQuery(query));
   const [sortBy, setSortBy] = useState<SortValue>("newest");
   const [selectedBrand, setSelectedBrand] = useState<"all" | VehicleBrand>("all");
@@ -466,6 +470,11 @@ export default function VehicleSearchResultsView({ query, navigate, view, locati
 
   return (
     <div className="min-h-screen bg-page text-ink">
+      <SeoHead
+        title="Vehicles for Sale in Nigeria | Qwik"
+        description="Find cars, buses, motorcycles and more vehicles for sale across Nigeria on Qwik."
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
       <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">
         {mobileFiltersOpen ? (
           <div className="fixed inset-0 z-[110] bg-[#1f1d27]/38 xl:hidden" onClick={() => setMobileFiltersOpen(false)}>

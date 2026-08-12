@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   buildProductDetailsRoute,
   buildSearchResultsRoute,
@@ -22,6 +22,8 @@ import { getCategorySearchContext, getLocationSearchParam, NIGERIAN_LOCATIONS } 
 import { isSellerVerified } from "../lib/sellerVerification";
 import { api } from "../services/api";
 import type { Ad, Category } from "../types";
+import SeoHead from "../components/seo/SeoHead";
+import { buildCanonicalUrl } from "../lib/seoCanonical";
 
 type SortValue = "newest" | "price-low" | "price-high";
 type VerifiedValue = "all" | "verified" | "unverified";
@@ -305,6 +307,7 @@ function SearchFilters({
 
 export default function SearchResultsPage() {
   const navigate = useNavigate();
+  const routerLocation = useLocation();
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q")?.trim() || "";
   const categoryContext = getCategorySearchContext(`?${searchParams.toString()}`);
@@ -496,6 +499,11 @@ export default function SearchResultsPage() {
 
   return (
     <div className="min-h-screen bg-page text-ink">
+      <SeoHead
+        title={query ? `Search Results for "${query}" | Qwik` : "Browse All Ads in Nigeria | Qwik"}
+        description={query ? `Browse search results for "${query}" on Qwik, Nigeria's trusted online marketplace.` : "Browse all ads for sale across Nigeria on Qwik."}
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
       <SiteHeader navigate={navigate} />
 
       <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">

@@ -6,6 +6,7 @@ import { reconcileVerificationRequiredError } from "../lib/emailVerification";
 import { api, isEmailVerificationRequiredError } from "../services/api";
 import { getToken } from "../services/auth";
 import type { Ad } from "../types";
+import SeoHead from "../components/seo/SeoHead";
 
 function formatNaira(value: number) {
   return `₦${value.toLocaleString()}`;
@@ -151,6 +152,7 @@ export default function MakeOfferPage() {
 
   return (
     <div className="grid min-h-screen place-items-center bg-black p-4">
+      <SeoHead noindex />
       <div className="w-full max-w-[370px] rounded-[28px] bg-white p-6">
         <h1 className="mb-6 text-center text-[36px] font-medium text-[#23222b]">Make an offer</h1>
 

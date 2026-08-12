@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import { buildProductDetailsRoute } from "../../constants/routes";
 import { ALL_NIGERIA_LOCATION, isCategoryMarkerQuery, NIGERIAN_LOCATIONS } from "../../lib/searchContext";
 import { isSellerVerified } from "../../lib/sellerVerification";
@@ -13,6 +14,8 @@ import BackButton from "../ui/BackButton";
 import DropdownSelect from "../ui/DropdownSelect";
 import { FallbackImage } from "../ui/FallbackImage";
 import { ImagePlaceholder } from "../ui/ImagePlaceholder";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -258,6 +261,7 @@ function CategoryFilters({
 }
 
 export default function CategoryListingView({ config, query, navigate, locationFilter }: CategoryListingViewProps) {
+  const routerLocation = useLocation();
   const [selectedSubtype, setSelectedSubtype] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortValue>("newest");
   const [verifiedFilter, setVerifiedFilter] = useState<VerifiedValue>("all");
@@ -353,7 +357,13 @@ export default function CategoryListingView({ config, query, navigate, locationF
   const headingQuery = query?.trim() || config.displayQuery;
 
   return (
-    <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
+    <>
+      <SeoHead
+        title={`${config.heading} | Qwik`}
+        description={`Browse ${config.heading} listings across Nigeria on Qwik, Nigeria's trusted online marketplace.`}
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
+      <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (
         <div className="fixed inset-0 z-[110] bg-[#1f1d27]/38 xl:hidden" onClick={() => setMobileFiltersOpen(false)}>
           <div
@@ -574,6 +584,7 @@ export default function CategoryListingView({ config, query, navigate, locationF
         </section>
       </div>
     </main>
+    </>
   );
 }
 

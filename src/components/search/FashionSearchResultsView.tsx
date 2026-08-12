@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import {
   buildProductDetailsRoute,
   buildSearchRoute,
@@ -23,6 +24,8 @@ import { api } from "../../services/api";
 import type { Ad } from "../../types";
 import ListingCard from "../listings/ListingCard";
 import BackButton from "../ui/BackButton";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 import { CategoryBubbleAvatar } from "./CategoryBubbleAvatar";
 import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
@@ -412,6 +415,7 @@ function FashionFilters({
 }
 
 export default function FashionSearchResultsView({ query, navigate, view, locationFilter }: FashionSearchResultsViewProps) {
+  const routerLocation = useLocation();
   const state = getFashionSearchState(query) ?? "general";
   const stateConfig = FASHION_STATE_CONFIG[state];
   const [selectedCategory, setSelectedCategory] = useState<"all" | FashionCategory>(stateConfig.defaultCategory);
@@ -503,7 +507,13 @@ export default function FashionSearchResultsView({ query, navigate, view, locati
   );
 
   return (
-    <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
+    <>
+      <SeoHead
+        title="Fashion for Sale in Nigeria | Qwik"
+        description="Shop clothing, shoes and fashion accessories for sale across Nigeria on Qwik."
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
+      <main className="mx-auto w-full max-w-[1728px] overflow-x-clip px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (
         <div className="fixed inset-0 z-[110] bg-[#1f1d27]/38 xl:hidden" onClick={() => setMobileFiltersOpen(false)}>
           <div
@@ -657,6 +667,7 @@ export default function FashionSearchResultsView({ query, navigate, view, locati
           </div>
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

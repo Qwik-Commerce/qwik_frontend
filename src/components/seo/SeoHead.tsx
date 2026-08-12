@@ -1,13 +1,15 @@
 import { useEffect } from "react";
 
 type SeoHeadProps = {
-  title: string;
-  description: string;
-  canonicalUrl: string;
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
   ogType?: string;
   ogImage?: string;
   twitterCard?: "summary" | "summary_large_image";
   structuredData?: Array<Record<string, unknown>>;
+  /** Emits <meta name="robots" content="noindex, nofollow"> for private/authenticated pages. */
+  noindex?: boolean;
 };
 
 type ManagedNode = {
@@ -67,28 +69,44 @@ export default function SeoHead({
   ogImage,
   twitterCard = "summary_large_image",
   structuredData = [],
+  noindex = false,
 }: SeoHeadProps) {
   useEffect(() => {
     const previousTitle = document.title;
+    const managedNodes: ManagedNode[] = [];
 
-    const managedNodes: ManagedNode[] = [
-      upsertMetaByName("description", description),
-      upsertCanonical(canonicalUrl),
-      upsertMetaByProperty("og:title", title),
-      upsertMetaByProperty("og:description", description),
-      upsertMetaByProperty("og:type", ogType),
-      upsertMetaByProperty("og:url", canonicalUrl),
-      upsertMetaByName("twitter:card", twitterCard),
-      upsertMetaByName("twitter:title", title),
-      upsertMetaByName("twitter:description", description),
-    ];
-
+    if (description !== undefined) {
+      managedNodes.push(upsertMetaByName("description", description));
+    }
+    if (canonicalUrl !== undefined) {
+      managedNodes.push(upsertCanonical(canonicalUrl));
+    }
+    if (title !== undefined) {
+      managedNodes.push(upsertMetaByProperty("og:title", title));
+      managedNodes.push(upsertMetaByName("twitter:title", title));
+    }
+    if (description !== undefined) {
+      managedNodes.push(upsertMetaByProperty("og:description", description));
+      managedNodes.push(upsertMetaByName("twitter:description", description));
+    }
+    if (title !== undefined || description !== undefined) {
+      managedNodes.push(upsertMetaByProperty("og:type", ogType));
+      managedNodes.push(upsertMetaByName("twitter:card", twitterCard));
+      if (canonicalUrl !== undefined) {
+        managedNodes.push(upsertMetaByProperty("og:url", canonicalUrl));
+      }
+    }
     if (ogImage) {
       managedNodes.push(upsertMetaByProperty("og:image", ogImage));
       managedNodes.push(upsertMetaByName("twitter:image", ogImage));
     }
+    if (noindex) {
+      managedNodes.push(upsertMetaByName("robots", "noindex, nofollow"));
+    }
 
-    document.title = title;
+    if (title !== undefined) {
+      document.title = title;
+    }
 
     const jsonLdScripts: HTMLScriptElement[] = [];
     structuredData.forEach((entry) => {
@@ -115,7 +133,7 @@ export default function SeoHead({
       });
       jsonLdScripts.forEach((script) => script.remove());
     };
-  }, [title, description, canonicalUrl, ogType, ogImage, twitterCard, structuredData]);
+  }, [title, description, canonicalUrl, ogType, ogImage, twitterCard, structuredData, noindex]);
 
   return null;
 }

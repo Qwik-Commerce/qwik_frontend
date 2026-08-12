@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import {
   buildProductDetailsRoute,
   ROUTES,
@@ -18,6 +19,8 @@ import BackButton from "../ui/BackButton";
 import { CategoryBubbleAvatar } from "./CategoryBubbleAvatar";
 import DropdownSelect from "../ui/DropdownSelect";
 import { getBubbleInitials, getCategoryBubbleImage } from "../../lib/categoryBubbleImages";
+import SeoHead from "../seo/SeoHead";
+import { buildCanonicalUrl } from "../../lib/seoCanonical";
 
 type NavigateTo = (to: string) => void;
 type SortValue = "newest" | "price-low" | "price-high";
@@ -289,6 +292,7 @@ function BeautyFilters({
 }
 
 export default function BeautySearchResultsView({ query, navigate, view, locationFilter }: BeautySearchResultsViewProps) {
+  const routerLocation = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<"all" | MockBeautyListing["categoryType"]>("Body Care");
   const [sortBy, setSortBy] = useState<SortValue>("newest");
   const [selectedType, setSelectedType] = useState<"all" | BeautyType>("Body Lotion");
@@ -369,7 +373,13 @@ export default function BeautySearchResultsView({ query, navigate, view, locatio
   );
 
   return (
-    <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">
+    <>
+      <SeoHead
+        title="Beauty Products for Sale in Nigeria | Qwik"
+        description="Discover beauty and personal care products for sale across Nigeria on Qwik."
+        canonicalUrl={buildCanonicalUrl(routerLocation.pathname, routerLocation.search)}
+      />
+      <main className="mx-auto w-full max-w-[1728px] px-4 pb-20 pt-8 sm:px-6 lg:px-12">
       {mobileFiltersOpen ? (
         <div className="fixed inset-0 z-[110] bg-[#1f1d27]/38 xl:hidden" onClick={() => setMobileFiltersOpen(false)}>
           <div
@@ -505,6 +515,7 @@ export default function BeautySearchResultsView({ query, navigate, view, locatio
           </div>
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

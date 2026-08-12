@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { getRoleFromToken, getToken } from "../../services/auth";
+import SeoHead from "../seo/SeoHead";
 
 export interface AdminRouteProps {
   children: ReactNode;
@@ -14,5 +15,10 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <SeoHead noindex />
+      {children}
+    </>
+  );
 }
