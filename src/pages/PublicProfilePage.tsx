@@ -7,6 +7,7 @@ import { getAdConditionLabel } from "../lib/adCondition";
 import { api } from "../services/api";
 import { getToken } from "../services/auth";
 import type { PublicUserProfile } from "../types";
+import SeoHead from "../components/seo/SeoHead";
 
 function formatNaira(value: number) {
   return `₦ ${value.toLocaleString()}`;
@@ -89,6 +90,13 @@ export default function PublicProfilePage() {
 
   return (
     <div className="min-h-screen bg-page text-ink">
+      {profile ? (
+        <SeoHead
+          title={`${profile.fullName} | Qwik`}
+          description={`View ${profile.fullName}'s profile and active listings on Qwik, Nigeria's trusted online marketplace.`}
+          canonicalUrl={`https://www.qwik.ng/users/${encodeURIComponent(profile.id)}`}
+        />
+      ) : null}
       <SiteHeader navigate={navigate} />
       <main className="mx-auto w-full max-w-[1512px] px-5 pb-20 pt-8 sm:px-10 lg:px-[60px]">
         {loading ? (
