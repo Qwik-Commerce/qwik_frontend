@@ -9,7 +9,7 @@ import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { getAdConditionLabel } from "../lib/adCondition";
 import { getLocationSearchParam } from "../lib/searchContext";
 import { isSellerVerified } from "../lib/sellerVerification";
-import { api } from "../services/api";
+import { api, isApiError } from "../services/api";
 import type { Ad } from "../types";
 
 type Category = {
@@ -181,6 +181,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isListingsUnavailable, setIsListingsUnavailable] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>(() => readStoredViewMode());
@@ -199,6 +200,7 @@ export default function HomePage() {
       if (page === 1) setLoading(true);
       else setLoadingMore(true);
       setError(null);
+      setIsListingsUnavailable(false);
       const params = new URLSearchParams({ pageSize: PAGE_SIZE.toString(), imagesLimit: "1", page: page.toString() });
       if (selectedLocation) params.set("location", selectedLocation);
       const result = await api.ads(`?${params.toString()}`);
@@ -214,6 +216,7 @@ export default function HomePage() {
       setCurrentPage(page);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load ads");
+      setIsListingsUnavailable(isApiError(err) && err.status === 503);
       console.error("Error fetching ads:", err);
     } finally {
       if (page === 1) setLoading(false);
@@ -287,7 +290,16 @@ export default function HomePage() {
         )}
         {error && (
           <div className="rounded-[18px] border border-[#f0d1d1] bg-white px-6 py-8 text-center">
-            <p className="text-[16px] text-[#d14343]">{error}</p>
+            {isListingsUnavailable ? (
+              <>
+                <p className="text-[18px] font-medium text-[#2f2d38]">Listings temporarily unavailable</p>
+                <p className="mt-2 text-[15px] text-[#5f5d68]">
+                  We're currently doing a quick system update. Listings are temporarily unavailable, but everything else is still available. Please try again in a moment.
+                </p>
+              </>
+            ) : (
+              <p className="text-[16px] text-[#d14343]">{error}</p>
+            )}
             <button
               type="button"
               onClick={() => fetchAds(1, false)}
