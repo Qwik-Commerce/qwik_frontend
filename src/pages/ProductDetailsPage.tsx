@@ -920,7 +920,7 @@ export default function ProductDetailsPage() {
                   <aside className="rounded-[14px] border border-[#e1dfe6] bg-white p-4 sm:p-5">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-start gap-3">
-                        <UserAvatar name={sellerName} imageUrl={sellerAvatarUrl} alt={sellerName} className="h-11 w-11 rounded-full object-cover text-[12px]" />
+                        <UserAvatar name={sellerName} imageUrl={sellerAvatarUrl} alt={sellerName} className="h-11 w-11 rounded-full object-cover text-[12px]" enableViewer />
                         <div>
                           <p className="text-[15px] font-medium text-[#2f2d38]">{sellerName}</p>
                           <p className="text-[12px] text-[#8f8b98]">{sellerMeta}</p>
