@@ -118,6 +118,7 @@ export default function PublicProfilePage() {
                     imageUrl={profile.profile?.avatarUrl}
                     alt={`${profile.fullName} profile`}
                     className="h-[92px] w-[92px] rounded-full object-cover text-[24px]"
+                    enableViewer
                   />
                   <div className="min-w-0">
                     <h1 className="truncate text-[30px] font-semibold leading-tight sm:text-[38px]">{profile.fullName}</h1>
