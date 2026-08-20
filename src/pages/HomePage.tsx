@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SiteFooter, SiteHeader } from "../components/AppShell";
 import VerifiedSellerBadge from "../components/listings/VerifiedSellerBadge";
@@ -195,7 +195,15 @@ export default function HomePage() {
     }
   }, [viewMode]);
 
+  // Synchronous guard against concurrent duplicate fetches (React state updates lag behind rapid scroll events)
+  const isFetchingRef = useRef(false);
+
   const fetchAds = useCallback(async (page: number = 1, shouldAppend: boolean = false) => {
+    // Only guard the append (infinite-scroll / load-more) path: repeated scroll events can otherwise
+    // fire concurrent requests for the same page and append the same ads twice. A full-replace fetch
+    // (shouldAppend === false, e.g. initial load, location change, retry) is idempotent, so it's never blocked.
+    if (shouldAppend && isFetchingRef.current) return;
+    if (shouldAppend) isFetchingRef.current = true;
     try {
       if (page === 1) setLoading(true);
       else setLoadingMore(true);
@@ -205,9 +213,13 @@ export default function HomePage() {
       if (selectedLocation) params.set("location", selectedLocation);
       const result = await api.ads(`?${params.toString()}`);
       const newProducts = result.data || [];
-      
+
       if (shouldAppend) {
-        setProducts((prev) => [...prev, ...newProducts]);
+        setProducts((prev) => {
+          const existingIds = new Set(prev.map((item) => item.id));
+          const deduped = newProducts.filter((item) => !existingIds.has(item.id));
+          return [...prev, ...deduped];
+        });
       } else {
         setProducts(newProducts);
       }
@@ -219,6 +231,7 @@ export default function HomePage() {
       setIsListingsUnavailable(isApiError(err) && err.status === 503);
       console.error("Error fetching ads:", err);
     } finally {
+      if (shouldAppend) isFetchingRef.current = false;
       if (page === 1) setLoading(false);
       else setLoadingMore(false);
     }
