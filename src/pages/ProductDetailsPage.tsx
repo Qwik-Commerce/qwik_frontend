@@ -7,10 +7,11 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/counter.css";
 import { SiteFooter, SiteHeader } from "../components/AppShell";
 import SeoHead from "../components/seo/SeoHead";
-import { ROUTES } from "../constants/routes";
+import { ROUTES, buildProductDetailsRoute } from "../constants/routes";
 import { FallbackImage } from "../components/ui/FallbackImage";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { UserAvatar } from "../components/ui/UserAvatar";
+import ListingCard from "../components/listings/ListingCard";
 import { useToast } from "../context/ToastContext";
 import { useUserCache } from "../hooks/useUserCache";
 import { formatMemberSince } from "../lib/currentUser";
@@ -217,6 +218,8 @@ export default function ProductDetailsPage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [submittingReport, setSubmittingReport] = useState(false);
+  const [similarAds, setSimilarAds] = useState<Ad[]>([]);
+  const [similarAdsLoading, setSimilarAdsLoading] = useState(false);
   const productId = id ?? "";
   const canonicalPath = productId ? `/product-details/${encodeURIComponent(productId)}` : "/product-details";
   const canonicalUrl = `${window.location.origin}${canonicalPath}`;
@@ -307,6 +310,8 @@ export default function ProductDetailsPage() {
     setReportOpen(false);
     setReportReason("");
     setSubmittingReport(false);
+    setSimilarAds([]);
+    setSimilarAdsLoading(false);
   }, [id]);
 
   useEffect(() => {
@@ -340,6 +345,29 @@ export default function ProductDetailsPage() {
       cancelled = true;
     };
   }, [ad?.id, fetchReviews]);
+
+  // Fetch other active ads in the same category as "Similar Ads".
+  useEffect(() => {
+    const categorySlug = ad?.category?.slug;
+    const currentAdId = ad?.id;
+    if (!categorySlug || !currentAdId) return;
+    let cancelled = false;
+    setSimilarAdsLoading(true);
+    api.ads(`?category=${encodeURIComponent(categorySlug)}&pageSize=8&imagesLimit=1`)
+      .then((response) => {
+        if (cancelled) return;
+        setSimilarAds(response.data.filter((item) => item.id !== currentAdId).slice(0, 4));
+      })
+      .catch(() => {
+        if (!cancelled) setSimilarAds([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSimilarAdsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ad?.id, ad?.category?.slug]);
 
   const handleOpenReportModal = () => {
     if (!ad) return;
@@ -1119,7 +1147,37 @@ export default function ProductDetailsPage() {
 
           <section className="mt-6 rounded-[14px] border border-dashed border-[#ddd9e4] bg-[#fbfafc] p-4 sm:p-5">
             <h4 className="text-[28px] font-normal">Similar Ads</h4>
-            <p className="mt-2 text-[14px] text-[#7f7b87]">Similar ads coming soon</p>
+            {similarAdsLoading ? (
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="h-[200px] animate-pulse rounded-[14px] bg-white sm:h-[240px]" />
+                ))}
+              </div>
+            ) : similarAds.length === 0 ? (
+              <p className="mt-2 text-[14px] text-[#7f7b87]">No similar ads found right now.</p>
+            ) : (
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {similarAds.map((item) => (
+                  <ListingCard
+                    key={item.id}
+                    item={{
+                      price: `₦ ${item.price.toLocaleString()}`,
+                      title: item.title,
+                      description: item.description,
+                      location: item.location,
+                      image: item.images?.[0]?.url,
+                      verifiedSeller: isSellerVerified(item.user),
+                    }}
+                    interactive
+                    onClick={() => navigate(buildProductDetailsRoute(item.id))}
+                    clampTitleLines={1}
+                    clampDescriptionLines={1}
+                    clampLocationLines={1}
+                    imageHeightClassName="h-[110px] sm:h-[140px]"
+                  />
+                ))}
+              </div>
+            )}
         </section>
       </main>
 
