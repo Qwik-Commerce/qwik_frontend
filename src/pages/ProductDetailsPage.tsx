@@ -158,9 +158,10 @@ function formatPhoneForDisplay(phone: string) {
   return phone;
 }
 
-function ProductDetailsSkeleton({ navigate }: { navigate: (to: string) => void }) {
+function ProductDetailsSkeleton({ navigate, canonicalUrl }: { navigate: (to: string) => void; canonicalUrl: string }) {
   return (
     <div className="min-h-screen bg-page text-ink">
+      <SeoHead canonicalUrl={canonicalUrl} />
       <SiteHeader navigate={navigate} />
       <main className="mx-auto w-full max-w-[1360px] px-4 pb-12 pt-4 sm:px-6 sm:pb-16 sm:pt-6 lg:px-10">
         <section className="rounded-[18px] bg-[#efefef] p-4 sm:p-6">
@@ -660,10 +661,11 @@ export default function ProductDetailsPage() {
     }
   };
 
-  if (loading) return <ProductDetailsSkeleton navigate={navigate} />;
+  if (loading) return <ProductDetailsSkeleton navigate={navigate} canonicalUrl={canonicalUrl} />;
   if (error || !ad) {
     return (
       <div className="min-h-screen bg-page text-ink">
+        <SeoHead canonicalUrl={canonicalUrl} noindex />
         <SiteHeader navigate={navigate} />
         <main className="mx-auto grid min-h-[60vh] w-full max-w-[1728px] place-items-center px-6 py-16">
           <div className="max-w-md rounded-[18px] border border-[#f0d1d1] bg-white px-6 py-8 text-center">

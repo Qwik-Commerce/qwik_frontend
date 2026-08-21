@@ -9,6 +9,7 @@ import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { getAdConditionLabel } from "../lib/adCondition";
 import { getLocationSearchParam } from "../lib/searchContext";
 import { isSellerVerified } from "../lib/sellerVerification";
+import SeoHead from "../components/seo/SeoHead";
 import { api, isApiError } from "../services/api";
 import type { Ad } from "../types";
 
@@ -269,6 +270,12 @@ export default function HomePage() {
   }, [fetchAds]);
   return (
     <div className="min-h-screen bg-page text-ink">
+      <SeoHead
+        title="Qwik.ng – Nigeria's Trusted Online Marketplace"
+        description="Buy, sell, and discover new and used items across Nigeria. Post ads for free and connect with buyers nationwide on Qwik."
+        canonicalUrl="https://www.qwik.ng"
+        ogImage="https://www.qwik.ng/images/logo-header.png"
+      />
       <SiteHeader navigate={navigate} />
 
       <section className="mx-auto w-full max-w-[1728px] overflow-hidden px-4 pb-1 pt-5 sm:px-6 sm:pt-7 lg:px-12 xl:pt-8">
