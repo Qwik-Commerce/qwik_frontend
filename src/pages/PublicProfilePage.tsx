@@ -90,13 +90,16 @@ export default function PublicProfilePage() {
 
   return (
     <div className="min-h-screen bg-page text-ink">
-      {profile ? (
-        <SeoHead
-          title={`${profile.fullName} | Qwik`}
-          description={`View ${profile.fullName}'s profile and active listings on Qwik, Nigeria's trusted online marketplace.`}
-          canonicalUrl={`https://www.qwik.ng/users/${encodeURIComponent(profile.id)}`}
-        />
-      ) : null}
+      <SeoHead
+        title={profile ? `${profile.fullName} | Qwik` : "Qwik"}
+        description={
+          profile
+            ? `View ${profile.fullName}'s profile and active listings on Qwik, Nigeria's trusted online marketplace.`
+            : undefined
+        }
+        canonicalUrl={id ? `https://www.qwik.ng/users/${encodeURIComponent(id)}` : undefined}
+        noindex={!loading && (Boolean(error) || !profile)}
+      />
       <SiteHeader navigate={navigate} />
       <main className="mx-auto w-full max-w-[1512px] px-5 pb-20 pt-8 sm:px-10 lg:px-[60px]">
         {loading ? (
