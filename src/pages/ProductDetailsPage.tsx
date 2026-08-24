@@ -731,6 +731,32 @@ export default function ProductDetailsPage() {
       name: sellerName,
     },
   };
+  // Only emit rating/review schema when real reviews exist; never fabricate a rating for unreviewed listings.
+  if (reviews.length > 0) {
+    const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+    productStructuredData.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: averageRating.toFixed(1),
+      reviewCount: reviews.length,
+      bestRating: 5,
+      worstRating: 1,
+    };
+    productStructuredData.review = reviews.map((review) => ({
+      "@type": "Review",
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: review.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      author: {
+        "@type": "Person",
+        name: review.user.fullName,
+      },
+      reviewBody: review.text,
+      datePublished: review.createdAt,
+    }));
+  }
   const breadcrumbStructuredData: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
