@@ -333,6 +333,7 @@ export interface RegisterPayload {
   privacyAccepted: boolean;
   termsVersion: string;
   privacyVersion: string;
+  referralCode?: string;
 }
 
 export interface ForgotPasswordPayload {

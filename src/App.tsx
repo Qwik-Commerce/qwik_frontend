@@ -1,10 +1,11 @@
-import { lazy, Suspense, type ReactNode } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { ROUTES } from "./constants/routes";
 import { AdminRoute } from "./components/auth/AdminRoute";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RouteAnalyticsTracker } from "./components/RouteAnalyticsTracker";
+import { captureReferralCode } from "./lib/referralAttribution";
 
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -69,9 +70,20 @@ function lazyRoute(node: ReactNode) {
   return <Suspense fallback={<RouteFallback />}>{node}</Suspense>;
 }
 
+function ReferralAttributionCapture() {
+  const location = useLocation();
+
+  useEffect(() => {
+    captureReferralCode(location.search);
+  }, [location.search]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <>
+      <ReferralAttributionCapture />
       <RouteAnalyticsTracker />
       <ScrollToTop />
       <Routes>

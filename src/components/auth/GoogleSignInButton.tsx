@@ -6,6 +6,7 @@ import { persistLegalConsentFromUser, setRole, setToken } from "../../services/a
 import { GoogleIcon } from "../icons/SocialIcons";
 import { resolveUserLoginRedirectFromSearch } from "../../lib/authRedirect";
 import { isProfileComplete, getProfileCompletionRedirect } from "../../lib/profileCompletion";
+import { clearStoredReferralCode, getStoredReferralCode } from "../../lib/referralAttribution";
 
 const GIS_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
@@ -187,10 +188,12 @@ export default function GoogleSignInButton({
             }
             try {
               setStatus("submitting");
+              const referralCode = requiresLegalConsent ? getStoredReferralCode() : undefined;
               const res = await api.googleAuth({
                 credential: response.credential,
                 termsAccepted: true,
                 privacyAccepted: true,
+                referralCode,
               });
               setToken(res.data.token);
               setRole(res.data.user.role);
@@ -206,6 +209,8 @@ export default function GoogleSignInButton({
             } catch (err) {
               showErrorRef.current(err instanceof Error ? err.message : "Google sign-in failed");
               setStatus("ready");
+            } finally {
+              if (requiresLegalConsent) clearStoredReferralCode();
             }
           };
           ensureGoogleInitialized(GOOGLE_CLIENT_ID!);
@@ -239,7 +244,7 @@ export default function GoogleSignInButton({
       activeCredentialHandler = null;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isConfigured, userRedirectTarget]);
+  }, [isConfigured, requiresLegalConsent, userRedirectTarget]);
 
   const triggerGooglePrompt = () => {
     if (!requireLegalConsent()) return;
