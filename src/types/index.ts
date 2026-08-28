@@ -71,6 +71,13 @@ export interface PayoutAccount {
   updatedAt: string;
 }
 
+export interface AdminPayoutAccount {
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  updatedAt: string;
+}
+
 export interface AdminReferralUser {
   id: string;
   fullName: string;

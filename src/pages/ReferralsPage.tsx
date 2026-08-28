@@ -63,16 +63,18 @@ export default function ReferralsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const isPayoutFormValid =
+    payoutForm.accountName.trim().length >= 2 &&
+    /^[0-9]{6,20}$/.test(payoutForm.accountNumber.trim()) &&
+    payoutForm.bankName.trim().length >= 2;
+
   const savePayoutAccount = async () => {
+    if (savingPayoutAccount || !isPayoutFormValid) return;
     const accountName = payoutForm.accountName.trim();
     const accountNumber = payoutForm.accountNumber.trim();
     const bankName = payoutForm.bankName.trim();
-    if (accountName.length < 2 || !/^[0-9]{6,20}$/.test(accountNumber) || bankName.length < 2) {
-      showError("Enter a valid account name, account number, and bank name");
-      return;
-    }
+    setSavingPayoutAccount(true);
     try {
-      setSavingPayoutAccount(true);
       const response = await api.updatePayoutAccount({ accountName, accountNumber, bankName });
       setPayoutAccount(response.data);
       setPayoutForm({ accountName: response.data.accountName, accountNumber: "", bankName: response.data.bankName });
@@ -258,7 +260,7 @@ export default function ReferralsPage() {
                     <button
                       type="button"
                       onClick={savePayoutAccount}
-                      disabled={savingPayoutAccount}
+                      disabled={savingPayoutAccount || !isPayoutFormValid}
                       className="mt-4 h-[44px] rounded-[10px] bg-gradient-to-r from-amber to-orange px-5 text-[14px] font-semibold text-white disabled:opacity-50"
                     >
                       {savingPayoutAccount ? "Saving..." : "Save payout details"}

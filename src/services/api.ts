@@ -41,6 +41,7 @@ import type {
   ReferralSummary,
   ReferralListItem,
   PayoutAccount,
+  AdminPayoutAccount,
   AdminReferral,
   AdminReferralCycle,
   AdminReferralPayout
@@ -802,6 +803,9 @@ export const api = {
       clearAdminApiCache();
       return response;
     }),
+
+  getAdminReferralPayoutAccount: (id: string) =>
+    request<AdminPayoutAccount | null>(`/admin/referral-payouts/${id}/payout-account`, { retry: 1 }),
 
   adminAuditLog: (params?: { page?: number; pageSize?: number; search?: string; action?: string; targetType?: string; from?: string; to?: string }) => {
     const searchParams = new URLSearchParams();

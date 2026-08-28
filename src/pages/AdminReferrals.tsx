@@ -3,7 +3,7 @@ import AdminLayout from "../components/admin/AdminLayout";
 import AdminModerationModal from "../components/admin/AdminModerationModal";
 import { useToast } from "../context/ToastContext";
 import { api } from "../services/api";
-import type { AdminReferral, AdminReferralCycle, AdminReferralPayout } from "../types";
+import type { AdminPayoutAccount, AdminReferral, AdminReferralCycle, AdminReferralPayout } from "../types";
 
 type Tab = "referrals" | "cycles";
 
@@ -96,6 +96,51 @@ function PayoutRecordModal({
   );
 }
 
+function PayoutAccountViewModal({
+  payout,
+  account,
+  loading,
+  onClose,
+}: {
+  payout: AdminReferralPayout | null;
+  account: AdminPayoutAccount | null;
+  loading: boolean;
+  onClose: () => void;
+}) {
+  if (!payout) return null;
+
+  return (
+    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-label="Payout account details">
+      <div className="w-full max-w-[480px] rounded-[14px] border border-[#e6e4eb] bg-white p-5 shadow-[0_20px_45px_rgba(0,0,0,0.18)] sm:p-6">
+        <h3 className="text-[20px] font-semibold text-[#1f1f29]">Payout account details</h3>
+        <p className="mt-2 text-[14px] leading-[1.5] text-[#6b6875]">
+          {payout.referrer.fullName} — {formatNaira(payout.totalAmount)}
+        </p>
+
+        <div className="mt-4 rounded-[10px] border border-[#eceaf0] bg-[#faf9fc] p-4 text-[14px]">
+          {loading ? (
+            <p className="text-[#7f7e88]">Loading...</p>
+          ) : account ? (
+            <div className="space-y-1.5">
+              <p><span className="text-[#94919d]">Account name:</span> {account.accountName}</p>
+              <p><span className="text-[#94919d]">Bank name:</span> {account.bankName}</p>
+              <p><span className="text-[#94919d]">Account number:</span> {account.accountNumber}</p>
+            </div>
+          ) : (
+            <p className="text-[#7f7e88]">This referrer has not submitted payout details yet.</p>
+          )}
+        </div>
+
+        <div className="mt-5 flex justify-end">
+          <button type="button" onClick={onClose} className="rounded-[10px] px-4 py-2 text-[14px] font-medium text-[#4b5563] hover:bg-[#f3f3f5]">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminReferrals() {
   const { error: showError, success } = useToast();
   const [tab, setTab] = useState<Tab>("referrals");
@@ -112,6 +157,9 @@ export default function AdminReferrals() {
   const [cyclesLoading, setCyclesLoading] = useState(true);
   const [payoutTarget, setPayoutTarget] = useState<AdminReferralPayout | null>(null);
   const [recordingPayout, setRecordingPayout] = useState(false);
+  const [accountViewTarget, setAccountViewTarget] = useState<AdminReferralPayout | null>(null);
+  const [accountViewData, setAccountViewData] = useState<AdminPayoutAccount | null>(null);
+  const [accountViewLoading, setAccountViewLoading] = useState(false);
 
   const fetchReferrals = async () => {
     try {
@@ -178,6 +226,21 @@ export default function AdminReferrals() {
       showError(err instanceof Error ? err.message : "Unable to record payout");
     } finally {
       setRecordingPayout(false);
+    }
+  };
+
+  const handleViewPayoutAccount = async (payout: AdminReferralPayout) => {
+    setAccountViewTarget(payout);
+    setAccountViewData(null);
+    try {
+      setAccountViewLoading(true);
+      const response = await api.getAdminReferralPayoutAccount(payout.id);
+      setAccountViewData(response.data);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Unable to load payout account");
+      setAccountViewTarget(null);
+    } finally {
+      setAccountViewLoading(false);
     }
   };
 
@@ -326,15 +389,24 @@ export default function AdminReferrals() {
                             </td>
                             <td className="py-3 text-[#1f1f29]">{payout.payoutReference ?? "—"}</td>
                             <td className="py-3">
-                              {payout.status === "PENDING" ? (
+                              <div className="flex flex-wrap gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => setPayoutTarget(payout)}
-                                  className="rounded-[8px] bg-[#1f8f5f] px-3 py-1.5 text-[12px] font-medium text-white hover:bg-[#18744e]"
+                                  onClick={() => handleViewPayoutAccount(payout)}
+                                  className="rounded-[8px] border border-[#dedde4] px-3 py-1.5 text-[12px] font-medium text-[#3a3743] hover:bg-[#f3f3f5]"
                                 >
-                                  Mark as paid
+                                  View payout account
                                 </button>
-                              ) : null}
+                                {payout.status === "PENDING" ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setPayoutTarget(payout)}
+                                    className="rounded-[8px] bg-[#1f8f5f] px-3 py-1.5 text-[12px] font-medium text-white hover:bg-[#18744e]"
+                                  >
+                                    Mark as paid
+                                  </button>
+                                ) : null}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -369,6 +441,13 @@ export default function AdminReferrals() {
         onClose={() => setPayoutTarget(null)}
         onConfirm={handleRecordPayout}
         loading={recordingPayout}
+      />
+
+      <PayoutAccountViewModal
+        payout={accountViewTarget}
+        account={accountViewData}
+        loading={accountViewLoading}
+        onClose={() => { setAccountViewTarget(null); setAccountViewData(null); }}
       />
     </AdminLayout>
   );
