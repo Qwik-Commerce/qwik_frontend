@@ -77,6 +77,7 @@ export const ROUTES = {
   
   // Error pages
   ADMIN_VERIFICATION: "/admin/verification",
+  ADMIN_REFERRALS: "/admin/referrals",
   NOT_FOUND: "/not-found",
 };
 

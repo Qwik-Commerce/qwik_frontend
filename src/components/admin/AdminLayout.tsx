@@ -18,6 +18,7 @@ export default function AdminLayout({ children, title, description, headerAction
     { label: 'Reports', path: '/admin/reports' },
     { label: 'Reviews', path: '/admin/reviews' },
     { label: 'Verification', path: '/admin/verification' },
+    { label: 'Referrals', path: '/admin/referrals' },
     { label: 'Audit Log', path: '/admin/audit-log' },
     { label: 'Communications', path: '/admin/communications' },
   ];

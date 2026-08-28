@@ -39,7 +39,10 @@ import type {
   FollowingSeller,
   PublicUserProfile,
   ReferralSummary,
-  ReferralListItem
+  ReferralListItem,
+  AdminReferral,
+  AdminReferralCycle,
+  AdminReferralPayout
 } from "../types/index";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000/api";
@@ -742,6 +745,50 @@ export const api = {
 
   updateAdminVerification: (id: string, payload: { status: "IN_REVIEW" | "APPROVED" | "REJECTED"; rejectionReason?: string; decisionNote?: string }) =>
     request<VerificationApplication>(`/admin/verifications/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }).then((response) => {
+      clearAdminApiCache();
+      return response;
+    }),
+
+  adminReferrals: (params?: { page?: number; pageSize?: number; search?: string; status?: AdminReferral["status"] }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.status) searchParams.set("status", params.status);
+    const query = searchParams.toString();
+    return request<AdminReferral[]>(`/admin/referrals${query ? `?${query}` : ""}`, {
+      staleTime: ADMIN_STALE_TIME,
+      cacheTime: ADMIN_CACHE_TIME,
+      retry: 1,
+    });
+  },
+
+  revokeAdminReferral: (id: string, reason: string) =>
+    request<AdminReferral>(`/admin/referrals/${id}/revoke`, {
+      method: "PATCH",
+      body: JSON.stringify({ reason }),
+    }).then((response) => {
+      clearAdminApiCache();
+      return response;
+    }),
+
+  adminReferralCycles: (params?: { page?: number; pageSize?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+    const query = searchParams.toString();
+    return request<AdminReferralCycle[]>(`/admin/referral-cycles${query ? `?${query}` : ""}`, {
+      staleTime: ADMIN_STALE_TIME,
+      cacheTime: ADMIN_CACHE_TIME,
+      retry: 1,
+    });
+  },
+
+  markAdminReferralPayoutPaid: (id: string, payload: { payoutReference: string; notes?: string }) =>
+    request<AdminReferralPayout>(`/admin/referral-payouts/${id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     }).then((response) => {
