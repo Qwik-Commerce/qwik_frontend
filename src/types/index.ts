@@ -48,6 +48,22 @@ export interface FollowStatus {
   followersCount: number;
 }
 
+export interface ReferralSummary {
+  code: string | null;
+  totalReferrals: number;
+  referralsByStatus: { PENDING_VERIFICATION: number; ACTIVE: number; REVOKED: number };
+  earnings: { pending: number; settled: number; paid: number; reversed: number };
+}
+
+export interface ReferralListItem {
+  id: string;
+  status: "PENDING_VERIFICATION" | "ACTIVE" | "REVOKED";
+  createdAt: string;
+  activatedAt: string | null;
+  referredUser: { id: string; fullName: string; email: string };
+  totalRewardAmount: number;
+}
+
 export interface FollowingSeller {
   id: string;
   fullName: string;

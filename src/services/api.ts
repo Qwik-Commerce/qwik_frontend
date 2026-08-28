@@ -37,7 +37,9 @@ import type {
   FollowStatus,
   FollowerSeller,
   FollowingSeller,
-  PublicUserProfile
+  PublicUserProfile,
+  ReferralSummary,
+  ReferralListItem
 } from "../types/index";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000/api";
@@ -819,4 +821,10 @@ export const api = {
 
   // TODO: updateOfferStatus - accept/reject offer
   // updateOfferStatus: (id: string, status: "accepted" | "rejected") => request<Offer>(`/offers/${id}`, { method: "PATCH", body: JSON.stringify({ status }) })
+
+  // ===== Referral Endpoints =====
+  getReferralSummary: () => request<ReferralSummary>("/referrals/summary", { staleTime: SHORT_LIST_STALE_TIME, retry: 1 }),
+
+  getReferralList: (page = 1, pageSize = 20) =>
+    request<ReferralListItem[]>(`/referrals/list?page=${page}&pageSize=${pageSize}`, { staleTime: SHORT_LIST_STALE_TIME, retry: 1 }),
 };

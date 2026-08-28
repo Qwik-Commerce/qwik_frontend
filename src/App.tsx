@@ -37,6 +37,7 @@ const NotificationSettingsPage = lazy(() => import("./pages/NotificationSettings
 const EmailNotificationSettingsPage = lazy(() => import("./pages/EmailNotificationSettingsPage"));
 const NotificationEmptyPage = lazy(() => import("./pages/NotificationEmptyPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
+const ReferralsPage = lazy(() => import("./pages/ReferralsPage"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const PostPage = lazy(() => import("./pages/PostPage"));
 const PostDetailsPage = lazy(() => import("./pages/PostDetailsPage"));
@@ -144,6 +145,7 @@ export default function App() {
         <Route path={ROUTES.PROFILE_SETTINGS} element={lazyRoute(<ProtectedRoute><ProfileSettingsPage /></ProtectedRoute>)} />
         <Route path={ROUTES.CHAT_SETTINGS} element={lazyRoute(<ProtectedRoute><ChatSettingsPage /></ProtectedRoute>)} />
         <Route path={ROUTES.ACCOUNT} element={lazyRoute(<ProtectedRoute><AccountPage /></ProtectedRoute>)} />
+        <Route path={ROUTES.REFERRALS} element={lazyRoute(<ProtectedRoute><ReferralsPage /></ProtectedRoute>)} />
         <Route path={ROUTES.GET_VERIFIED} element={lazyRoute(<ProtectedRoute><GetVerifiedPage /></ProtectedRoute>)} />
         <Route path={ROUTES.GET_VERIFIED_BUSINESS_INFO} element={lazyRoute(<ProtectedRoute><GetVerifiedBusinessInfoPage /></ProtectedRoute>)} />
         <Route path={ROUTES.GET_VERIFIED_DOCUMENT_UPLOAD} element={lazyRoute(<ProtectedRoute><GetVerifiedDocumentUploadPage /></ProtectedRoute>)} />
