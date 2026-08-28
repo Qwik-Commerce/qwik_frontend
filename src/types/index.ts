@@ -64,6 +64,13 @@ export interface ReferralListItem {
   totalRewardAmount: number;
 }
 
+export interface PayoutAccount {
+  accountName: string;
+  accountNumberMasked: string;
+  bankName: string;
+  updatedAt: string;
+}
+
 export interface AdminReferralUser {
   id: string;
   fullName: string;

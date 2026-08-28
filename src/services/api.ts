@@ -40,6 +40,7 @@ import type {
   PublicUserProfile,
   ReferralSummary,
   ReferralListItem,
+  PayoutAccount,
   AdminReferral,
   AdminReferralCycle,
   AdminReferralPayout
@@ -508,6 +509,12 @@ export const api = {
 
   updateNotificationSettings: (payload: Partial<NotificationSettings>) =>
     request<NotificationSettings>("/users/me/notification-settings", { method: "PATCH", body: JSON.stringify(payload) }),
+
+  getPayoutAccount: () =>
+    request<PayoutAccount | null>("/users/me/payout-account", { retry: 1 }),
+
+  updatePayoutAccount: (payload: { accountName: string; accountNumber: string; bankName: string }) =>
+    request<PayoutAccount>("/users/me/payout-account", { method: "PATCH", body: JSON.stringify(payload) }),
 
   // ===== Upload Endpoints =====
   uploadImages: (files: File[]) => {

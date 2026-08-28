@@ -5,7 +5,7 @@ import SettingsSidebar, { MobileSettingsMenu } from "../components/settings/Sett
 import { getSettingsNavItems } from "../lib/settings-nav-config";
 import { useToast } from "../context/ToastContext";
 import { api } from "../services/api";
-import type { ReferralListItem, ReferralSummary } from "../types";
+import type { PayoutAccount, ReferralListItem, ReferralSummary } from "../types";
 
 function formatNaira(kobo: number) {
   return `₦${(kobo / 100).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -30,16 +30,27 @@ export default function ReferralsPage() {
   const [referrals, setReferrals] = useState<ReferralListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [payoutAccount, setPayoutAccount] = useState<PayoutAccount | null>(null);
+  const [payoutForm, setPayoutForm] = useState({ accountName: "", accountNumber: "", bankName: "" });
+  const [savingPayoutAccount, setSavingPayoutAccount] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
-        const [summaryRes, listRes] = await Promise.all([api.getReferralSummary(), api.getReferralList()]);
+        const [summaryRes, listRes, payoutAccountRes] = await Promise.all([
+          api.getReferralSummary(),
+          api.getReferralList(),
+          api.getPayoutAccount(),
+        ]);
         if (cancelled) return;
         setSummary(summaryRes.data);
         setReferrals(listRes.data);
+        setPayoutAccount(payoutAccountRes.data);
+        if (payoutAccountRes.data) {
+          setPayoutForm({ accountName: payoutAccountRes.data.accountName, accountNumber: "", bankName: payoutAccountRes.data.bankName });
+        }
       } catch (err) {
         if (!cancelled) showError(err instanceof Error ? err.message : "Failed to load referrals");
       } finally {
@@ -51,6 +62,27 @@ export default function ReferralsPage() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const savePayoutAccount = async () => {
+    const accountName = payoutForm.accountName.trim();
+    const accountNumber = payoutForm.accountNumber.trim();
+    const bankName = payoutForm.bankName.trim();
+    if (accountName.length < 2 || !/^[0-9]{6,20}$/.test(accountNumber) || bankName.length < 2) {
+      showError("Enter a valid account name, account number, and bank name");
+      return;
+    }
+    try {
+      setSavingPayoutAccount(true);
+      const response = await api.updatePayoutAccount({ accountName, accountNumber, bankName });
+      setPayoutAccount(response.data);
+      setPayoutForm({ accountName: response.data.accountName, accountNumber: "", bankName: response.data.bankName });
+      success("Payout details saved");
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Failed to save payout details");
+    } finally {
+      setSavingPayoutAccount(false);
+    }
+  };
 
   const referralLink = summary?.code ? `${window.location.origin}/signup?ref=${summary.code}` : "";
 
@@ -170,6 +202,67 @@ export default function ReferralsPage() {
                         </table>
                       </div>
                     )}
+                  </div>
+
+                  <div className="mt-8 border-t border-[#eceaf0] pt-6">
+                    <h2 className="text-[16px] font-semibold text-ink">Payout details</h2>
+                    <p className="mt-1 text-[13px] text-[#7a7884]">
+                      Where we should send your referral earnings. This is used only for manual payouts and is never shared publicly.
+                    </p>
+
+                    {payoutAccount ? (
+                      <p className="mt-3 text-[14px] text-ink">
+                        {payoutAccount.accountName} &middot; {payoutAccount.bankName} &middot; {payoutAccount.accountNumberMasked}
+                      </p>
+                    ) : (
+                      <p className="mt-3 text-[14px] text-[#7a7884]">No payout details on file yet.</p>
+                    )}
+
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="text-[13px] text-[#94919d]" htmlFor="payout-account-name">Account name</label>
+                        <input
+                          id="payout-account-name"
+                          type="text"
+                          value={payoutForm.accountName}
+                          onChange={(e) => setPayoutForm((f) => ({ ...f, accountName: e.target.value }))}
+                          className="mt-1 h-[44px] w-full rounded-[10px] border border-[#eceaf0] px-3 text-[14px] text-ink"
+                          placeholder="e.g. Jane Doe"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[13px] text-[#94919d]" htmlFor="payout-bank-name">Bank name</label>
+                        <input
+                          id="payout-bank-name"
+                          type="text"
+                          value={payoutForm.bankName}
+                          onChange={(e) => setPayoutForm((f) => ({ ...f, bankName: e.target.value }))}
+                          className="mt-1 h-[44px] w-full rounded-[10px] border border-[#eceaf0] px-3 text-[14px] text-ink"
+                          placeholder="e.g. GTBank"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-[13px] text-[#94919d]" htmlFor="payout-account-number">Account number</label>
+                        <input
+                          id="payout-account-number"
+                          type="text"
+                          inputMode="numeric"
+                          value={payoutForm.accountNumber}
+                          onChange={(e) => setPayoutForm((f) => ({ ...f, accountNumber: e.target.value.replace(/[^0-9]/g, "") }))}
+                          className="mt-1 h-[44px] w-full rounded-[10px] border border-[#eceaf0] px-3 text-[14px] text-ink"
+                          placeholder={payoutAccount ? `Re-enter to update (currently ${payoutAccount.accountNumberMasked})` : "e.g. 0123456789"}
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={savePayoutAccount}
+                      disabled={savingPayoutAccount}
+                      className="mt-4 h-[44px] rounded-[10px] bg-gradient-to-r from-amber to-orange px-5 text-[14px] font-semibold text-white disabled:opacity-50"
+                    >
+                      {savingPayoutAccount ? "Saving..." : "Save payout details"}
+                    </button>
                   </div>
                 </>
               )}
