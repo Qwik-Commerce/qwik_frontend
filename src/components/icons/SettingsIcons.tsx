@@ -68,3 +68,14 @@ export function ShieldCheckIcon() {
     </svg>
   );
 }
+
+export function GiftIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8">
+      <rect x="4" y="9" width="16" height="11" rx="1.5" />
+      <path d="M4 9h16v3.5H4z" />
+      <path d="M12 9v11" />
+      <path d="M12 9c-1.6 0-3-1-3-2.5S10 4 12 5c2-1 3 0 3 1.5S13.6 9 12 9Z" />
+    </svg>
+  );
+}

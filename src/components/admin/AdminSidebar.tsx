@@ -11,6 +11,7 @@ import {
   MessageSquare,
   ClipboardList,
   Mail,
+  Gift,
   LogOut 
 } from 'lucide-react';
 
@@ -30,6 +31,7 @@ export default function AdminSidebar({ className = '' }: AdminSidebarProps) {
     { label: 'Reports', icon: AlertCircle, path: '/admin/reports' },
     { label: 'Reviews', icon: MessageSquare, path: '/admin/reviews' },
     { label: 'Verification', icon: CheckCircle, path: '/admin/verification' },
+    { label: 'Referrals', icon: Gift, path: '/admin/referrals' },
     { label: 'Audit Log', icon: ClipboardList, path: '/admin/audit-log' },
     { label: 'Communications', icon: Mail, path: '/admin/communications' },
   ];

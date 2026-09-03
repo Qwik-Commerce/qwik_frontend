@@ -48,6 +48,80 @@ export interface FollowStatus {
   followersCount: number;
 }
 
+export interface ReferralSummary {
+  code: string | null;
+  totalReferrals: number;
+  referralsByStatus: { PENDING_VERIFICATION: number; ACTIVE: number; REVOKED: number };
+  earnings: { pending: number; settled: number; paid: number; reversed: number };
+}
+
+export interface ReferralListItem {
+  id: string;
+  status: "PENDING_VERIFICATION" | "ACTIVE" | "REVOKED";
+  createdAt: string;
+  activatedAt: string | null;
+  referredUser: { id: string; fullName: string; email: string };
+  totalRewardAmount: number;
+}
+
+export interface PayoutAccount {
+  accountName: string;
+  accountNumberMasked: string;
+  bankName: string;
+  updatedAt: string;
+}
+
+export interface AdminPayoutAccount {
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  updatedAt: string;
+}
+
+export interface AdminReferralUser {
+  id: string;
+  fullName: string;
+  email: string;
+  status?: "ACTIVE" | "BANNED";
+}
+
+export interface AdminReferral {
+  id: string;
+  code: string;
+  status: "PENDING_VERIFICATION" | "ACTIVE" | "REVOKED";
+  signupIp: string | null;
+  signupUserAgent: string | null;
+  createdAt: string;
+  activatedAt: string | null;
+  revokedAt: string | null;
+  revokedReason: string | null;
+  referrer: AdminReferralUser;
+  referredUser: AdminReferralUser;
+  rewards: { id: string; rewardAmount: number; status: "PENDING" | "SETTLED" | "PAID" | "REVERSED" }[];
+}
+
+export interface AdminReferralPayout {
+  id: string;
+  cycleId: string;
+  referrerId: string;
+  totalAmount: number;
+  status: "PENDING" | "PAID" | "FAILED";
+  paidAt: string | null;
+  paidByAdminId: string | null;
+  payoutReference: string | null;
+  notes: string | null;
+  referrer: AdminReferralUser;
+  paidByAdmin: AdminReferralUser | null;
+}
+
+export interface AdminReferralCycle {
+  id: string;
+  periodStart: string;
+  periodEnd: string;
+  status: "OPEN" | "PROCESSING" | "CLOSED";
+  payouts: AdminReferralPayout[];
+}
+
 export interface FollowingSeller {
   id: string;
   fullName: string;
@@ -333,6 +407,7 @@ export interface RegisterPayload {
   privacyAccepted: boolean;
   termsVersion: string;
   privacyVersion: string;
+  referralCode?: string;
 }
 
 export interface ForgotPasswordPayload {

@@ -56,6 +56,7 @@ export const ROUTES = {
   PUBLIC_USER_PROFILE: "/users/:id",
   CHAT_SETTINGS: "/chat-settings",
   ACCOUNT: "/account",
+  REFERRALS: "/referrals",
   GET_VERIFIED: "/get-verified",
   GET_VERIFIED_BUSINESS_INFO: "/get-verified/business-info",
   GET_VERIFIED_DOCUMENT_UPLOAD: "/get-verified/document-upload",
@@ -76,6 +77,7 @@ export const ROUTES = {
   
   // Error pages
   ADMIN_VERIFICATION: "/admin/verification",
+  ADMIN_REFERRALS: "/admin/referrals",
   NOT_FOUND: "/not-found",
 };
 

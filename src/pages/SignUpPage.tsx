@@ -12,6 +12,7 @@ import LegalConsentModal, { type LegalDocumentType } from "../components/auth/Le
 import GoogleSignInButton from "../components/auth/GoogleSignInButton";
 import { isProfileComplete, getProfileCompletionRedirect } from "../lib/profileCompletion";
 import SeoHead from "../components/seo/SeoHead";
+import { clearStoredReferralCode, getStoredReferralCode } from "../lib/referralAttribution";
 
 const LEGAL_CONSENT_VERSION = "2026-06-09";
 
@@ -218,6 +219,7 @@ export default function SignUpPage() {
         onClick={async () => {
           try {
             setIsSubmitting(true);
+            const referralCode = getStoredReferralCode();
             const res = await api.register({
               email: email.trim().toLowerCase(),
               password,
@@ -227,6 +229,7 @@ export default function SignUpPage() {
               privacyAccepted: true,
               termsVersion: LEGAL_CONSENT_VERSION,
               privacyVersion: LEGAL_CONSENT_VERSION,
+              referralCode,
             });
             setToken(res.data.token);
             setRole(res.data.user.role);
@@ -247,6 +250,7 @@ export default function SignUpPage() {
           } catch (error) {
             showError(error instanceof Error ? error.message : "Sign up failed");
           } finally {
+            clearStoredReferralCode();
             setIsSubmitting(false);
           }
         }}

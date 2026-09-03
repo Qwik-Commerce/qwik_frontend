@@ -37,7 +37,14 @@ import type {
   FollowStatus,
   FollowerSeller,
   FollowingSeller,
-  PublicUserProfile
+  PublicUserProfile,
+  ReferralSummary,
+  ReferralListItem,
+  PayoutAccount,
+  AdminPayoutAccount,
+  AdminReferral,
+  AdminReferralCycle,
+  AdminReferralPayout
 } from "../types/index";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000/api";
@@ -233,7 +240,7 @@ export const api = {
       body: JSON.stringify(payload)
     }),
 
-  googleAuth: (payload: { credential: string; termsAccepted: boolean; privacyAccepted: boolean }) =>
+  googleAuth: (payload: { credential: string; termsAccepted: boolean; privacyAccepted: boolean; referralCode?: string }) =>
     request<AuthResponse>("/auth/google", {
       method: "POST",
       body: JSON.stringify(payload)
@@ -504,6 +511,12 @@ export const api = {
   updateNotificationSettings: (payload: Partial<NotificationSettings>) =>
     request<NotificationSettings>("/users/me/notification-settings", { method: "PATCH", body: JSON.stringify(payload) }),
 
+  getPayoutAccount: () =>
+    request<PayoutAccount | null>("/users/me/payout-account", { retry: 1 }),
+
+  updatePayoutAccount: (payload: { accountName: string; accountNumber: string; bankName: string }) =>
+    request<PayoutAccount>("/users/me/payout-account", { method: "PATCH", body: JSON.stringify(payload) }),
+
   // ===== Upload Endpoints =====
   uploadImages: (files: File[]) => {
     const formData = new FormData();
@@ -747,6 +760,53 @@ export const api = {
       return response;
     }),
 
+  adminReferrals: (params?: { page?: number; pageSize?: number; search?: string; status?: AdminReferral["status"] }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.status) searchParams.set("status", params.status);
+    const query = searchParams.toString();
+    return request<AdminReferral[]>(`/admin/referrals${query ? `?${query}` : ""}`, {
+      staleTime: ADMIN_STALE_TIME,
+      cacheTime: ADMIN_CACHE_TIME,
+      retry: 1,
+    });
+  },
+
+  revokeAdminReferral: (id: string, reason: string) =>
+    request<AdminReferral>(`/admin/referrals/${id}/revoke`, {
+      method: "PATCH",
+      body: JSON.stringify({ reason }),
+    }).then((response) => {
+      clearAdminApiCache();
+      return response;
+    }),
+
+  adminReferralCycles: (params?: { page?: number; pageSize?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+    const query = searchParams.toString();
+    return request<AdminReferralCycle[]>(`/admin/referral-cycles${query ? `?${query}` : ""}`, {
+      staleTime: ADMIN_STALE_TIME,
+      cacheTime: ADMIN_CACHE_TIME,
+      retry: 1,
+    });
+  },
+
+  markAdminReferralPayoutPaid: (id: string, payload: { payoutReference: string; notes?: string }) =>
+    request<AdminReferralPayout>(`/admin/referral-payouts/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }).then((response) => {
+      clearAdminApiCache();
+      return response;
+    }),
+
+  getAdminReferralPayoutAccount: (id: string) =>
+    request<AdminPayoutAccount | null>(`/admin/referral-payouts/${id}/payout-account`, { retry: 1 }),
+
   adminAuditLog: (params?: { page?: number; pageSize?: number; search?: string; action?: string; targetType?: string; from?: string; to?: string }) => {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set("page", String(params.page));
@@ -819,4 +879,10 @@ export const api = {
 
   // TODO: updateOfferStatus - accept/reject offer
   // updateOfferStatus: (id: string, status: "accepted" | "rejected") => request<Offer>(`/offers/${id}`, { method: "PATCH", body: JSON.stringify({ status }) })
+
+  // ===== Referral Endpoints =====
+  getReferralSummary: () => request<ReferralSummary>("/referrals/summary", { staleTime: SHORT_LIST_STALE_TIME, retry: 1 }),
+
+  getReferralList: (page = 1, pageSize = 20) =>
+    request<ReferralListItem[]>(`/referrals/list?page=${page}&pageSize=${pageSize}`, { staleTime: SHORT_LIST_STALE_TIME, retry: 1 }),
 };

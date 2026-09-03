@@ -1,10 +1,11 @@
-import { lazy, Suspense, type ReactNode } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { ROUTES } from "./constants/routes";
 import { AdminRoute } from "./components/auth/AdminRoute";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RouteAnalyticsTracker } from "./components/RouteAnalyticsTracker";
+import { captureReferralCode } from "./lib/referralAttribution";
 
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -36,6 +37,7 @@ const NotificationSettingsPage = lazy(() => import("./pages/NotificationSettings
 const EmailNotificationSettingsPage = lazy(() => import("./pages/EmailNotificationSettingsPage"));
 const NotificationEmptyPage = lazy(() => import("./pages/NotificationEmptyPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
+const ReferralsPage = lazy(() => import("./pages/ReferralsPage"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const PostPage = lazy(() => import("./pages/PostPage"));
 const PostDetailsPage = lazy(() => import("./pages/PostDetailsPage"));
@@ -59,6 +61,7 @@ const AdminAds = lazy(() => import("./pages/AdminAds"));
 const AdminReports = lazy(() => import("./pages/AdminReports"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
 const AdminVerification = lazy(() => import("./pages/AdminVerification"));
+const AdminReferrals = lazy(() => import("./pages/AdminReferrals"));
 const AdminAuditLog = lazy(() => import("./pages/AdminAuditLog"));
 const AdminCommunications = lazy(() => import("./pages/AdminCommunications"));
 function RouteFallback() {
@@ -69,9 +72,20 @@ function lazyRoute(node: ReactNode) {
   return <Suspense fallback={<RouteFallback />}>{node}</Suspense>;
 }
 
+function ReferralAttributionCapture() {
+  const location = useLocation();
+
+  useEffect(() => {
+    captureReferralCode(location.search);
+  }, [location.search]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <>
+      <ReferralAttributionCapture />
       <RouteAnalyticsTracker />
       <ScrollToTop />
       <Routes>
@@ -132,6 +146,7 @@ export default function App() {
         <Route path={ROUTES.PROFILE_SETTINGS} element={lazyRoute(<ProtectedRoute><ProfileSettingsPage /></ProtectedRoute>)} />
         <Route path={ROUTES.CHAT_SETTINGS} element={lazyRoute(<ProtectedRoute><ChatSettingsPage /></ProtectedRoute>)} />
         <Route path={ROUTES.ACCOUNT} element={lazyRoute(<ProtectedRoute><AccountPage /></ProtectedRoute>)} />
+        <Route path={ROUTES.REFERRALS} element={lazyRoute(<ProtectedRoute><ReferralsPage /></ProtectedRoute>)} />
         <Route path={ROUTES.GET_VERIFIED} element={lazyRoute(<ProtectedRoute><GetVerifiedPage /></ProtectedRoute>)} />
         <Route path={ROUTES.GET_VERIFIED_BUSINESS_INFO} element={lazyRoute(<ProtectedRoute><GetVerifiedBusinessInfoPage /></ProtectedRoute>)} />
         <Route path={ROUTES.GET_VERIFIED_DOCUMENT_UPLOAD} element={lazyRoute(<ProtectedRoute><GetVerifiedDocumentUploadPage /></ProtectedRoute>)} />
@@ -158,6 +173,7 @@ export default function App() {
         <Route path="/admin/reports" element={lazyRoute(<AdminRoute><AdminReports /></AdminRoute>)} />
         <Route path="/admin/reviews" element={lazyRoute(<AdminRoute><AdminReviews /></AdminRoute>)} />
         <Route path={ROUTES.ADMIN_VERIFICATION} element={lazyRoute(<AdminRoute><AdminVerification /></AdminRoute>)} />
+        <Route path={ROUTES.ADMIN_REFERRALS} element={lazyRoute(<AdminRoute><AdminReferrals /></AdminRoute>)} />
         <Route path="/admin/audit-log" element={lazyRoute(<AdminRoute><AdminAuditLog /></AdminRoute>)} />
         <Route path="/admin/communications" element={lazyRoute(<AdminRoute><AdminCommunications /></AdminRoute>)} />
 
